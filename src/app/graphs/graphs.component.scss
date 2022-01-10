@@ -1,0 +1,12 @@
+:host
+{
+    display: flex;
+    flex-flow: column;
+    width: 100%;
+}
+
+.rows
+{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}

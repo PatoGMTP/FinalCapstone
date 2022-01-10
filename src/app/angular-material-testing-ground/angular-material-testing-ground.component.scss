@@ -1,0 +1,8 @@
+:host > *
+{
+    background-color: gray;
+
+    display: flex;
+    flex-flow: column;
+    gap: 20px;
+}
