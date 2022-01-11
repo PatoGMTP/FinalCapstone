@@ -5,22 +5,22 @@
   </span>
 
   <div class="buttons">
-    <button routerLink="home">
+    <button routerLink="home" routerLinkActive="highlight">
       Home
     </button>
-    <button routerLink="graphs">
+    <button routerLink="graphs" routerLinkActive="highlight">
       Graphs
     </button>
-    <button routerLink="investments">
+    <button routerLink="investments" routerLinkActive="highlight">
       Investments
     </button>
-    <button routerLink="test">
+    <button routerLink="test" routerLinkActive="highlight">
       Test
     </button>
-    <button *ngIf="!logged_in" (click)="login()">
+    <button *ngIf="!session" (click)="login()">
       Login
     </button>
-    <button *ngIf="logged_in" (click)="logout()">
+    <button *ngIf="session" (click)="logout()">
       Logout
     </button>
   </div>

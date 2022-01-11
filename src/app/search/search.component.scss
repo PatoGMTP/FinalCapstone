@@ -1,0 +1,27 @@
+:host
+{
+    width: 100%;
+
+    & > *
+    {
+        width: 100%;
+    }
+}
+
+.myform
+{
+    background-color: gray;
+}
+
+
+// .mat-chip-list-wrapper
+// {
+//     display: flex;
+//     flex-flow: column;
+
+//     .chips
+//     {
+//         display: flex;
+//         flex-flow: row;
+//     }
+// }

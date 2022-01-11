@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { io } from 'socket.io-client';
+import { Historical, List, Live } from './serverInts';
 
 @Injectable({
   providedIn: 'root'
@@ -17,30 +18,30 @@ export class StockServerService {
     this.socket.emit('list');
   }
 
-  getStockList(): Observable<any>
+  getStockList(): Observable<List>
   {
     return new Observable((observer:any) => {
-      this.socket.on('list', (data:any) => {
+      this.socket.on('list', (data:List) => {
         observer.next(data);
       })
     })
   }
 
-  getStockHistoricalData(): Observable<any>
+  getStockHistoricalData(): Observable<Historical>
   {
     return new Observable((observer:any) => {
-      this.socket.on('list', (data:any) => {
+      this.socket.on('list', (data:Historical) => {
         observer.next(data);
       })
     })
   }
 
-  getStockLiveData(symbols: string[]): Observable<any>
+  getStockLiveData(symbols: string[]): Observable<Live>
   {
     this.socket.emit('live', {symbols:symbols});
 
     return new Observable((observer:any) => {
-      this.socket.on('live', (data:any) => {
+      this.socket.on('live', (data:Live) => {
         observer.next(data);
       })
     })

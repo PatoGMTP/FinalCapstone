@@ -1,0 +1,29 @@
+
+  <mat-form-field appearance="fill" class="myform">
+    <mat-label>Tracked Stocks</mat-label>
+    <input
+      placeholder="New Stock To Track..."
+      #symbol_input
+      [formControl]="symbol_ctrl"
+      [matAutocomplete]="auto_symbol"
+      [matChipInputFor]="chipList"
+      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+      (matChipInputTokenEnd)="add($event)">
+    <mat-chip-list #chipList aria-label="Symbol selection">
+        <div class="chips">
+            <mat-chip
+              *ngFor="let symbol of tracked_symbols"
+              (removed)="remove(symbol)">
+              {{symbol}}
+              <button matChipRemove>
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip>
+        </div>
+    </mat-chip-list>
+    <mat-autocomplete #auto_symbol="matAutocomplete" (optionSelected)="selected($event)">
+      <mat-option *ngFor="let symbol of filtered_symbols | async" [value]="symbol">
+        {{symbol}}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>

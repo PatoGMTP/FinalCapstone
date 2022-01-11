@@ -23,6 +23,7 @@ import { HomeComponent } from './home/home.component';
 import { GraphsComponent } from './graphs/graphs.component';
 import { InvestmentsComponent } from './investments/investments.component';
 import { AngularMaterialTestingGroundComponent } from './angular-material-testing-ground/angular-material-testing-ground.component';
+import { SearchComponent } from './search/search.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import { AngularMaterialTestingGroundComponent } from './angular-material-testin
     HomeComponent,
     GraphsComponent,
     InvestmentsComponent,
-    AngularMaterialTestingGroundComponent
+    AngularMaterialTestingGroundComponent,
+    SearchComponent
   ],
   imports: [
     BrowserModule,
