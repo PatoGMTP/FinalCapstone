@@ -1,0 +1,111 @@
+<div class="outer">
+    <div class="left">
+        <div class="symbols">
+            <!-- <button *ngFor="let symbol of tracked_symbols">{{symbol}}</button> -->
+
+            <mat-button-toggle-group
+                [(ngModel)]="selected_symbol"
+                aria-label="Symbol"
+                vertical
+            >
+                <mat-button-toggle
+                    *ngFor="let symbol of tracked_symbols"
+                    [value]="symbol"
+                    (click)="update()"
+                >
+                    {{symbol}}
+                </mat-button-toggle>
+            </mat-button-toggle-group>
+        </div>
+    </div>
+
+    <div class="middle">
+        <div class="top">
+            <button (click)="toggle_type()">{{type}}</button>
+
+            <mat-form-field
+                appearance="fill"
+                *ngIf="type == 'Relative'"
+            >
+                <mat-label>Range</mat-label>
+                <mat-select
+                    [(value)]="selected_range"
+                    [formControl]="number_range_ctrl"
+                    (selectionChange)="update()"
+                >
+                    <mat-option
+                        *ngFor="let range of ranges"
+                        [value]="range.value"
+                    >
+                        {{range.view_value}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <div *ngIf="type == 'Fixed'">
+                <mat-form-field appearance="fill" [formGroup]="date_range_ctrl">
+                    <mat-label>Enter a date range</mat-label>
+
+                    <input
+                        matInput
+                        [matDatepicker]="start_picker"
+                        formControlName="start"
+                        placeholder="Start date"
+                        (dateChange)="update($event)"
+                    >
+                    <mat-datepicker-toggle
+                        matSuffix
+                        [for]="start_picker"
+                    ></mat-datepicker-toggle>
+                    <mat-datepicker #start_picker></mat-datepicker>
+
+                    <input
+                        matInput
+                        [matDatepicker]="end_picker"
+                        formControlName="end"
+                        placeholder="End date"
+                        (dateChange)="update($event)"
+                    >
+                    <mat-datepicker-toggle
+                        matSuffix
+                        [for]="end_picker"
+                    ></mat-datepicker-toggle>
+                    <mat-datepicker #end_picker></mat-datepicker>
+
+                    <mat-error *ngIf="date_range_ctrl.controls['start'].hasError('matStartDateInvalid')">Invalid start date
+                    </mat-error>
+                    <mat-error *ngIf="date_range_ctrl.controls['end'].hasError('matEndDateInvalid')">Invalid end date</mat-error>
+                </mat-form-field>
+
+                <p>Selected range: {{date_range_ctrl.value | json}}</p>
+            </div>
+        </div>
+
+        <div class="graph">
+            <plotly-plot
+                [data]="graph.data"
+                [layout]="graph.layout"
+            ></plotly-plot>
+        </div>
+    </div>
+
+    <div class="right">
+        <div class="intervals">
+            <!-- <button *ngFor="let interval of intervals">{{interval}}</button> -->
+
+            <mat-button-toggle-group
+                [(ngModel)]="selected_interval"
+                aria-label="Interval"
+                vertical
+            >
+                <mat-button-toggle
+                    *ngFor="let interval of intervals"
+                    [value]="interval"
+                    (click)="update()"
+                >
+                    {{interval}}
+                </mat-button-toggle>
+            </mat-button-toggle-group>
+        </div>
+    </div>
+</div>

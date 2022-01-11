@@ -1,9 +1,12 @@
+import { Interval, Range_Number } from "./intervalType";
+
 export interface Graph
 {
     id?: number,
     symbol: string,
-    range_type: "fixed" | "relative",
+    range_type: "Fixed" | "Relative",
+    range_number: Range_Number,
     start: Date,
     end: Date,
-    interval: "5 minutes" | "15 minutes" | "1 hour" | "1 day",
+    interval: Interval,
 }

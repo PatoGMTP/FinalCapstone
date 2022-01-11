@@ -63,4 +63,9 @@ export class AppComponent {
     this.logged_in = false;
     this.supabase.signout();
   }
+
+  purge(): void
+  {
+    this.supabase.purge();
+  }
 }

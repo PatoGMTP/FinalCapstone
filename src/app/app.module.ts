@@ -2,6 +2,10 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
+import * as PlotlyJS from 'plotly.js-dist-min';
+import { PlotlyModule } from 'angular-plotly.js';
+PlotlyModule.plotlyjs = PlotlyJS;
+
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -24,6 +28,8 @@ import { GraphsComponent } from './graphs/graphs.component';
 import { InvestmentsComponent } from './investments/investments.component';
 import { AngularMaterialTestingGroundComponent } from './angular-material-testing-ground/angular-material-testing-ground.component';
 import { SearchComponent } from './search/search.component';
+import { OverviewComponent } from './overview/overview.component';
+import { CommonModule } from '@angular/common';
 
 @NgModule({
   declarations: [
@@ -32,7 +38,8 @@ import { SearchComponent } from './search/search.component';
     GraphsComponent,
     InvestmentsComponent,
     AngularMaterialTestingGroundComponent,
-    SearchComponent
+    SearchComponent,
+    OverviewComponent
   ],
   imports: [
     BrowserModule,
@@ -54,6 +61,8 @@ import { SearchComponent } from './search/search.component';
     MatIconModule,
     NativeDateModule,
     MatNativeDateModule,
+    CommonModule,
+    PlotlyModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

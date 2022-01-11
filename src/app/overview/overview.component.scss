@@ -1,0 +1,40 @@
+.outer
+{
+    display: flex;
+    flex-flow: row;
+
+    .left
+    {
+        background-color: lightcoral;
+        .symbols
+        {
+            display: flex;
+            flex-flow: column;
+        }
+    }
+
+    .middle
+    {
+        background-color: dimgrey;
+
+        display: flex;
+        flex-flow: column;
+
+        .top
+        {
+            display: flex;
+            flex-flow: row;
+        }
+    }
+
+    .right
+    {
+        background-color: lightsalmon;
+
+        .intervals
+        {
+            display: flex;
+            flex-flow: column;
+        }
+    }
+}

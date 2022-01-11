@@ -10,8 +10,9 @@ export class HomeComponent implements OnInit {
 
   constructor(private supabase: SupabaseService) { }
 
-  ngOnInit(): void {
-    console.log(this.supabase);
+  ngOnInit(): void
+  {
+    
   }
 
 }
