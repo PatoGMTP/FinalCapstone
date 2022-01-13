@@ -24,9 +24,7 @@ export class AppComponent {
 
   ngOnInit(): void
   {
-    this.dummy.getStockList().subscribe(resp => console.log(resp));
-
-    this.dummy.requestStockList();
+    let logged_in_string = localStorage.getItem("signed_in");
 
     this.supabase.authChanges((_, session) => {
       this.session = session;
@@ -48,7 +46,10 @@ export class AppComponent {
 
     if (!this.session)
     {
-      this.supabase.load_local();
+      if (logged_in_string != "true")
+      {
+        this.supabase.load_local();
+      }
     }
   }
 

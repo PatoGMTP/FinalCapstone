@@ -10,18 +10,40 @@ data:
         data: DataPoint[]
     }[]
 }
-export interface Live{
+
+export interface Live
+{
     "response-type": "live",
-    "new-value": { 
+    "new-value":
+    { 
             symbol: string,
             data: DataPoint[]
     }
 }
 
+export interface Live_N
+{
+    "response-type": "live",
+    "new-value":
+    { 
+            symbol: string,
+            data: DataPoint_N[]
+    }
+}
+
 export interface DataPoint{
-    timestamp: string,
+    timestamp: Date,
     open: string,
     high: string,
     low: string,
     close: string,
+}
+
+export interface DataPoint_N
+{
+    timestamp: Date,
+    open: number,
+    high: number,
+    low: number,
+    close: number,
 }

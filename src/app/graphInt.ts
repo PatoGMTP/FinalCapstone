@@ -1,4 +1,4 @@
-import { Interval, Range_Number } from "./intervalType";
+import { Interval_String, Range_Number } from "./intervalType";
 
 export interface Graph
 {
@@ -8,5 +8,5 @@ export interface Graph
     range_number: Range_Number,
     start: Date,
     end: Date,
-    interval: Interval,
+    interval: Interval_String,
 }

@@ -117,7 +117,7 @@ export class SupabaseService {
     if (index >= 0)
     {
       let removed_investment = this.investments_list.find(item => item.symbol == symbol)!;
-      let list_removed_graphs = this.custom_graphs.filter(item => item.symbol == symbol);
+      let list_removed_graphs = this.custom_graphs.filter((item, i) => item.symbol == symbol && i != 0);
 
       // console.log(removed_investment, list_removed_graphs);
 
@@ -145,11 +145,28 @@ export class SupabaseService {
       // this.custom_graphs = this.custom_graphs.filter(item => item.symbol != symbol);
       this.custom_graphs.forEach((item, index, object) =>
       {
-        if (item.symbol == symbol)
+        if (item.symbol == symbol && index != 0)
         {
           object.splice(index, 1);
         }
       });
+
+      console.log(JSON.stringify([this.overview_state.symbol, symbol, this.tracked_symbols]));
+
+      if (this.overview_state.symbol == symbol)
+      {
+        this.overview_state.symbol = "All";
+
+        console.log(this.page_state.overview_state === this.overview_state);
+
+        console.log(JSON.stringify([this.page_state, this.overview_state, this.overview_state.symbol, symbol, this.tracked_symbols]));
+
+        if (this.session)
+        {
+          console.log("Waiting...");
+          this.updateGraph(this.overview_state).then(resp => console.log(resp));
+        }
+      }
 
       this.symbol_subject.next(this.tracked_symbols);
       this.graph_subject.next(this.custom_graphs);
@@ -161,28 +178,25 @@ export class SupabaseService {
 
   update_overview(input: Graph): void
   {
-    // console.log("OLD:", this.overview_state)
+    this.update_custom_graph(input, 0);
+  }
 
-    // console.log(this.page_state);
-
-    Object.assign(this.overview_state, input)
-
-    // console.log("NEW:", this.overview_state)
-    // this.overview_state = input;
-    // this.custom_graphs[0] = input;
-    // this.page_state.overview_state = input;
-
-    // console.log("test", this.overview_state === this.custom_graphs[0]);
+  update_custom_graph(input: Graph, index: number): void
+  {
+    Object.assign(this.custom_graphs[index], input)
 
     this.graph_subject.next(this.custom_graphs);
 
     if (this.session)
     {
-      this.updateGraph({id: input.id, owner: this.user?.id!, options: this.overview_state}).then(resp => console.log(resp));
+      this.updateGraph(input).then(resp => console.log(resp));
     }
 
-    // console.log(this.page_state);
-    localStorage.setItem("page_state", JSON.stringify(this.page_state));
+    let text = JSON.stringify(this.page_state);
+
+    console.log(text);
+
+    localStorage.setItem("page_state", text);
   }
 
   new_user(): void
@@ -193,14 +207,11 @@ export class SupabaseService {
 
     // Register new user
     this.updateProfile({id: this.user?.id!, updated_at: new Date(), username: "New User"}).then(prof => {
-      // console.log(prof);
 
       // Register Overview widget as first "custom graph"
-      this.updateGraph({owner: this.user?.id!, options: this.overview_state}).then(val => {
-        // console.log(val);
+      this.updateGraph(this.overview_state).then(val => {
           this.overview_state.id = val.data![0].id;
-          // this.custom_graphs[0] = this.overview_state;
-          // this.page_state.overview_state = this.overview_state;
+
           console.log("assigned id", this.overview_state.id);
           this.graph_subject.next(this.custom_graphs);
 
@@ -210,7 +221,7 @@ export class SupabaseService {
         this.custom_graphs.forEach((graph, i) => {
           if (i != 0)
           {
-            this.updateGraph({owner: this.user?.id!, options: graph}).then(resp => {
+            this.updateGraph(graph).then(resp => {
               let g = this.custom_graphs.find(i => i == graph);
               if (!g?.id)
               {
@@ -261,7 +272,10 @@ export class SupabaseService {
 
       // this.custom_graphs = resp.data?.map(item => {return {id: item.id, ...item.options}}) as Graph[];
       resp.data?.map(item => {return {id: item.id, ...item.options} as Graph}).forEach(item => this.custom_graphs.push(item));
-      Object.assign(this.overview_state, this.custom_graphs[0]);
+      this.overview_state = this.custom_graphs[0];
+
+      this.page_state.custom_graphs = this.custom_graphs;
+      this.page_state.overview_state = this.overview_state;
       // this.overview_state = this.custom_graphs[0];
 
       // console.log(this.custom_graphs, this.overview_state);
@@ -285,6 +299,9 @@ export class SupabaseService {
 
       // console.log(this.investments_list, this.tracked_symbols);
 
+      this.page_state.investments_list = this.investments_list;
+      this.page_state.tracked_symbols = this.tracked_symbols;
+
       console.log("Should have investments loaded", this.page_state);
 
       this.symbol_subject.next(this.tracked_symbols);
@@ -296,17 +313,19 @@ export class SupabaseService {
   {
     let text = localStorage.getItem("page_state");
 
+    console.log(text);
+
     if (text)
     {
       console.log("Should have initial state", this.page_state);
 
       this.page_state = JSON.parse(text);
-      this.page_state.overview_state = this.page_state.custom_graphs[0];
 
       console.log("Should have loaded local", this.page_state);
   
       this.tracked_symbols = this.page_state.tracked_symbols;
       this.custom_graphs = this.page_state.custom_graphs;
+      this.custom_graphs[0] = this.page_state.overview_state;
       this.overview_state = this.page_state.overview_state;
       this.investments_list = this.page_state.investments_list;
   
@@ -323,13 +342,21 @@ export class SupabaseService {
 
   async signin(): Promise<void>
   {
-    localStorage.setItem("page_state", JSON.stringify(this.page_state));
+    console.log(this.page_state);
+
+    let text = JSON.stringify(this.page_state);
+
+    localStorage.setItem("page_state", text);
+
+    localStorage.setItem("signed_in", "true");
 
     const { user, session, error, provider, url } = await this.supabase.auth.signIn({provider: 'google'})
   }
 
   signout(): void
   {
+    localStorage.setItem("signed_in", "false");
+
     this.supabase.auth.signOut();
   }
 
@@ -340,10 +367,16 @@ export class SupabaseService {
     return this.supabase.from('profiles').upsert(profile, {returning: "representation"});
   }
 
-  updateGraph(graph: Graph_Entry)
+  updateGraph(graph: Graph)
   {
-    console.log(graph.id);
-    return this.supabase.from('graphs').upsert(graph, {returning: "representation"});
+    let output: Graph_Entry = {
+      id: graph.id,
+      owner: this.user?.id,
+      options: graph,
+    }
+
+    console.log(output);
+    return this.supabase.from('graphs').upsert(output, {returning: "representation"});
   }
 
   removeGraph(graph: Graph)
