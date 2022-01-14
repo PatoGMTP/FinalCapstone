@@ -82,7 +82,9 @@ export class OverviewComponent implements OnInit {
   }
 
   line_data: {}[] = [];
-
+  // You might consider making an interface for the layout so you don't have to explicitly
+  // define all the properties here. Or, you don't technically need to define it since
+  // you are setting it here.  There properties should all be inferred
   layout: {width: number, height: number, title: string, margin: Object, yaxis: Object, xaxis: Object} =
   {
     width: 1200,
