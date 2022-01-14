@@ -47,3 +47,7 @@ export interface DataPoint_N
     low: number,
     close: number,
 }
+
+const SERVER_DATA_FREQUENCY = 60_000;
+
+export {SERVER_DATA_FREQUENCY};

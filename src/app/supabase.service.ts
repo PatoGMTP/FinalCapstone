@@ -45,8 +45,8 @@ export class SupabaseService {
   {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
 
-    this.dummy.getStockList().subscribe(obj => {
-      this.all_symbols = obj.symbols;
+    this.dummy.symbol_updates.subscribe(symbols => {
+      this.all_symbols = symbols;
     });
   }
 
@@ -86,7 +86,7 @@ export class SupabaseService {
 
   add_tracker(symbol: string): void
   {
-    let investment = {symbol, units: 0};
+    let investment: Investment = {symbol, units: 0};
 
     this.page_state.tracked_symbols.push(symbol);
     this.page_state.investments_list.push(investment);
@@ -94,7 +94,20 @@ export class SupabaseService {
     // If logged in, update Supabase as well
     if (this.session)
     {
-      this.updateInvestment({owner: this.user?.id!, options: investment}).then(console.log);
+      this.updateInvestment({owner: this.user?.id!, options: investment}).then(resp => {
+        console.log(resp);
+
+        if (resp.data)
+        {
+          investment.id = resp.data[0].id
+          console.log("assigned id", investment.id, investment);
+          this.investments_subject.next(this.page_state.investments_list);
+        }
+        else
+        {
+          console.log("ERROR! (Investment):", resp, investment);
+        }
+      });
     }
 
     this.symbol_subject.next(this.page_state.tracked_symbols);
@@ -114,10 +127,11 @@ export class SupabaseService {
       // If logged in, let Supabase know about changes
       if (this.session)
       {
+        console.log(removed_investment);
         this.removeInvestment(removed_investment).then(result => console.log(result));
 
         list_removed_graphs.forEach(item => {
-          this.removeGraph(item).then(console.log);
+          this.removeGraph(item).then(result => console.log(result));
         });
       }
 

@@ -18,30 +18,33 @@ export class SearchComponent implements OnInit {
   tracked_symbols: string[] = [];
   all_symbols: string[] = [];
   symbol_ctrl = new FormControl();
-  filtered_symbols: Observable<string[]>;
+  filtered_symbols: Observable<string[]> = new Observable<string[]>();
   @ViewChild('symbol_input') symbol_input!: ElementRef<HTMLInputElement>;
   separatorKeysCodes: number[] = [ENTER, COMMA];
 
   constructor(private supabase: SupabaseService, private dummy: StockServerService)
   {
-    this.filtered_symbols = this.symbol_ctrl.valueChanges.pipe(
-      startWith(null),
-      map((symbol: string | null) => (symbol ? this._filter(symbol) : this.all_symbols.slice())),
-    );
   }
 
   ngOnInit(): void {
     this.supabase.symbol_subject.subscribe(list => this.tracked_symbols = list);
-    this.dummy.getStockList().subscribe(resp => this.all_symbols = resp.symbols);
+
+    this.dummy.symbol_updates.subscribe(symbols => {
+      this.all_symbols = symbols;
+
+      this.filtered_symbols = this.symbol_ctrl.valueChanges.pipe(
+        startWith(null),
+        map((symbol: string | null) => (symbol ? this._filter(symbol) : this.all_symbols.slice())),
+      );
+
+      this.filtered_symbols.subscribe(thing => console.log(thing));
+    });
   }
 
   add(event: MatChipInputEvent): void {
     const value = (event.value || '').trim().toUpperCase();
 
-    if (value && this.all_symbols.includes(value) && !this.tracked_symbols.includes(value))
-    {
-      this.supabase.add_tracker(value);
-    }
+    this.check(value);
 
     event.chipInput!.clear();
     this.symbol_ctrl.setValue(null);
@@ -52,16 +55,24 @@ export class SearchComponent implements OnInit {
     const index = this.tracked_symbols.indexOf(symbol);
 
     if (index >= 0) {
-      // this.tracked_symbols.splice(index, 1);
-
       this.supabase.remove_tracker(symbol);
     }
   }
 
   selected(event: MatAutocompleteSelectedEvent): void {
-    this.supabase.add_tracker(event.option.viewValue);
+    let value = event.option.viewValue;
+    this.check(value);
+
     this.symbol_input.nativeElement.value = '';
     this.symbol_ctrl.setValue(null);
+  }
+
+  check(input: string): void
+  {
+    if (input && this.all_symbols.includes(input) && !this.tracked_symbols.includes(input))
+    {
+      this.supabase.add_tracker(input);
+    }
   }
 
   private _filter(value: string): string[]

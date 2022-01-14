@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, timestamp } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
-import { DataPoint, DataPoint_N, Historical, List, Live } from './serverInts';
+import { DataPoint, DataPoint_N, Historical, List, Live, SERVER_DATA_FREQUENCY } from './serverInts';
 
 @Injectable({
   providedIn: 'root'
@@ -14,14 +14,30 @@ export class StockServerService {
   live_data: {[symbol: string]: DataPoint_N[]} = {};
   live_updates = new BehaviorSubject<{[symbol: string]: DataPoint_N[]}>(this.live_data);
 
+  symbols: {symbol: string, updated: boolean}[] = [];
+  symbol_updates = new BehaviorSubject<string[]>([]);
+
   constructor()
   {
-    this.getStockList().subscribe(resp => {
+    this.listen_for_stock_list().subscribe(resp => {
+      this.symbols = [];
+
+      resp.symbols.forEach(sym => {
+        this.symbols.push({
+          symbol: sym,
+          updated: false,
+        })
+
+        this.live_data[sym] = [];
+      });
+
+      this.symbol_updates.next(this.symbols.map(item => item.symbol));
+
       this.socket.on("historical", (hist: Historical) => {
         console.log(hist);
 
         hist.data.forEach(item => {
-          this.live_data[item.symbol] = item.data.map(item => {
+          this.live_data[item.symbol] = this.live_data[item.symbol].concat(item.data.map(item => {
             return {
               timestamp: new Date(item.timestamp),
               open: Number(item.open),
@@ -29,9 +45,10 @@ export class StockServerService {
               high: Number(item.high),
               low: Number(item.low),
             }
-          }).reverse();
-          console.log(this.live_data);
+          }).reverse());
         });
+
+        console.log(this.live_data);
 
         this.live_updates.next(this.live_data);
   
@@ -55,9 +72,18 @@ export class StockServerService {
             };
             
             this.live_data[data['new-value'].symbol].push(new_data);
-            this.live_updates.next(this.live_data);
-            // console.log(this.live_data);
-            console.log(data['new-value'].data);
+
+            this.symbols.find(item => item.symbol == data['new-value'].symbol)!.updated = true;
+
+            if (this.symbols.every(item => item.updated))
+            {
+              this.live_updates.next(this.live_data);
+              console.log(this.live_data);
+
+              localStorage.setItem("local_hist_data", JSON.stringify(this.live_data));
+
+              this.symbols.forEach(sym => sym.updated = false);
+            }
           }
         });
 
@@ -66,15 +92,18 @@ export class StockServerService {
           symbols: resp.symbols
         });
       });
-      // let now = new Date().setUTCHours(0, 0, 0, 0);
-      let now = Date.now();
-      this.socket.emit("historical", {symbols: resp.symbols, start: new Date(now - (1000*60*60*24*30 + 1000*60*2))});
+      
+      let now = new Date().setSeconds(0, 0);
+      console.log(new Date(now));
+      
+      // Get data for the last 30 days + 1 extra data point
+      this.socket.emit("historical", {symbols: resp.symbols, start: new Date(now - (1000*60*60*24*30 + SERVER_DATA_FREQUENCY))});
     });
 
     this.socket.emit('list');
   }
 
-  getStockList(): Observable<List>
+  listen_for_stock_list(): Observable<List>
   {
     return new Observable((observer:any) => {
       this.socket.on('list', (data:List) => {

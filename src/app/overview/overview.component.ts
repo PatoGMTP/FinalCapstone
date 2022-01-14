@@ -4,7 +4,7 @@ import { Interval_Number, Interval_String, Range_Number, Range_String } from '..
 import { Graph } from '../graphInt';
 import { SupabaseService } from '../supabase.service';
 import { StockServerService } from '../stock-server.service';
-import { DataPoint_N } from '../serverInts';
+import { DataPoint_N, SERVER_DATA_FREQUENCY } from '../serverInts';
 
 @Component({
   selector: 'app-overview',
@@ -220,8 +220,6 @@ export class OverviewComponent implements OnInit {
     this.dummy.live_updates.subscribe(data => {
       this.all_data = data;
 
-      console.log(this.all_data);
-
       this.update_graph();
     });
   }
@@ -243,15 +241,15 @@ export class OverviewComponent implements OnInit {
     let len = this.all_data[this.tracked_symbols[1]].length;
 
     // The following code all does a similar thing: converts some time range into an index for the stock server
-    // data. This often involves dividing something by 60_000, as that's the number of milliseconds in a minute,
-    // and the stock server has data in intervals of a minute.
+    // data. This often involves dividing something by 60_000 (SERVER_DATA_FREQUENCY), as that's the number of 
+    // milliseconds in a minute, and the stock server has data in intervals of a minute.
 
     // Some indexes also have a +-2, this is because the code currently makes one less datapoint than expected 
     // without that, likely something in the code below needs to be fixed but having the +-2 currently gets around this.
 
     if (this.type == "Relative")
     {
-      start_index = len - ((this.number_range_ctrl.value / 60000) + 2);
+      start_index = len - ((this.number_range_ctrl.value / SERVER_DATA_FREQUENCY) + 2);
       end_index = len;
       if (start_index < 0) start_index = 0;
     }
@@ -272,11 +270,8 @@ export class OverviewComponent implements OnInit {
 
       let s = new Date(this.date_range_ctrl.value.start).setHours(0, 0, 0, 0);
       let e = new Date(this.date_range_ctrl.value.end).setHours(0, 0, 0, 0);
-      console.log(today, s, e, minutes_so_far);
-      start_index = len - (((today - s) / 60000) + minutes_so_far);
-      end_index = len - (((today - e) / 60000) + minutes_so_far - 2);
-
-      console.log(start_index, end_index);
+      start_index = len - (((today - s) / SERVER_DATA_FREQUENCY) + minutes_so_far);
+      end_index = len - (((today - e) / SERVER_DATA_FREQUENCY) + minutes_so_far - 2);
 
       if (start_index > len)
       {
@@ -287,8 +282,6 @@ export class OverviewComponent implements OnInit {
       {
         end_index = len;
       }
-
-      console.log(start_index, end_index);
     }
 
     if (this.selected_symbol == "All")
@@ -306,7 +299,7 @@ export class OverviewComponent implements OnInit {
         let times: Date[] = [];
   
         len = cur_data.length;
-        let iter = (this.interval_s_to_n[this.selected_interval] / 60000);
+        let iter = (this.interval_s_to_n[this.selected_interval] / SERVER_DATA_FREQUENCY);
 
         // This gets an average of the open and close to use as the datapoint
         for (let i = iter; i < len; i += iter)
@@ -346,7 +339,7 @@ export class OverviewComponent implements OnInit {
       let times: Date[] = [];
 
       len = cur_data.length;
-      let iter = (this.interval_s_to_n[this.selected_interval] / 60000);
+      let iter = (this.interval_s_to_n[this.selected_interval] / SERVER_DATA_FREQUENCY);
 
       for (let i = iter; i < len; i += iter)
       {

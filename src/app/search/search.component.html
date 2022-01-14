@@ -9,6 +9,11 @@
       [matChipInputFor]="chipList"
       [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
       (matChipInputTokenEnd)="add($event)">
+    <mat-autocomplete autoActiveFirstOption #auto_symbol="matAutocomplete" (optionSelected)="selected($event)">
+      <mat-option *ngFor="let symbol of filtered_symbols | async" [value]="symbol">
+        {{symbol}}
+      </mat-option>
+    </mat-autocomplete>
     <mat-chip-list #chipList aria-label="Symbol selection">
         <div class="chips">
             <mat-chip
@@ -21,9 +26,4 @@
             </mat-chip>
         </div>
     </mat-chip-list>
-    <mat-autocomplete #auto_symbol="matAutocomplete" (optionSelected)="selected($event)">
-      <mat-option *ngFor="let symbol of filtered_symbols | async" [value]="symbol">
-        {{symbol}}
-      </mat-option>
-    </mat-autocomplete>
   </mat-form-field>
