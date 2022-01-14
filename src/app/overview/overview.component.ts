@@ -171,16 +171,19 @@ export class OverviewComponent implements OnInit {
 
       // console.log(this.tracked_symbols, this.selected_symbol);
 
-      // If the currently displayed symbol is no longer tracked, switch to "All"
+      // If the currently displayed symbol is no longer tracked, ensure we've switched to "All"
       if (!this.tracked_symbols.includes(this.selected_symbol))
       {
-        this.selected_symbol = this.tracked_symbols[0];
-        this.update_graph();
-
-        // Obscure rendering issue: values are already set correctly, but not shown, re-setting fixes this
-        setTimeout(() => {
+        if (this.selected_symbol != this.tracked_symbols[0])
+        {
           this.selected_symbol = this.tracked_symbols[0];
-        }, 10);
+          this.update_graph();
+  
+          // Obscure rendering issue: values are already set correctly, but not shown, re-setting fixes this
+          setTimeout(() => {
+            this.selected_symbol = this.tracked_symbols[0];
+          }, 10);
+        }
       }
       // If we're displaying "All", we definitely had some changes happen to the line graph if the tracked symbols changed
       else if (this.selected_symbol == "All")

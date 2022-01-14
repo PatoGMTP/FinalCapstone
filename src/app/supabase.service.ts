@@ -90,8 +90,6 @@ export class SupabaseService {
 
   add_tracker(symbol: string): void
   {
-    // console.log("add!", this.session);
-
     let investment = {symbol, units: 0};
 
     this.tracked_symbols.push(symbol);
@@ -110,16 +108,12 @@ export class SupabaseService {
 
   remove_tracker(symbol: string): void
   {
-    // console.log("remove!", this.session);
-
     const index = this.tracked_symbols.indexOf(symbol);
 
     if (index >= 0)
     {
       let removed_investment = this.investments_list.find(item => item.symbol == symbol)!;
       let list_removed_graphs = this.custom_graphs.filter((item, i) => item.symbol == symbol && i != 0);
-
-      // console.log(removed_investment, list_removed_graphs);
 
       // If logged in, let Supabase know about changes
       if (this.session)
@@ -132,8 +126,9 @@ export class SupabaseService {
       }
 
       this.tracked_symbols.splice(index, 1);
-
-      // this.investments_list = this.investments_list.filter(item => item.symbol != symbol);
+      
+      // Much of the code on this page will focus on modifying an object without changing its reference/pointer,
+      // hence why we use the following loops and "splice"
       this.investments_list.forEach((item, index, object) =>
       {
         if (item.symbol == symbol)
@@ -142,7 +137,6 @@ export class SupabaseService {
         }
       });
 
-      // this.custom_graphs = this.custom_graphs.filter(item => item.symbol != symbol);
       this.custom_graphs.forEach((item, index, object) =>
       {
         if (item.symbol == symbol && index != 0)
@@ -151,25 +145,19 @@ export class SupabaseService {
         }
       });
 
-      console.log(JSON.stringify([this.overview_state.symbol, symbol, this.tracked_symbols]));
-
+      // If we're deleting the currently displayed symbol, switch the currently displayed symbol to "All"
       if (this.overview_state.symbol == symbol)
       {
         this.overview_state.symbol = "All";
 
-        console.log(this.page_state.overview_state === this.overview_state);
-
-        console.log(JSON.stringify([this.page_state, this.overview_state, this.overview_state.symbol, symbol, this.tracked_symbols]));
-
         if (this.session)
         {
-          console.log("Waiting...");
           this.updateGraph(this.overview_state).then(resp => console.log(resp));
         }
       }
 
-      this.symbol_subject.next(this.tracked_symbols);
       this.graph_subject.next(this.custom_graphs);
+      this.symbol_subject.next(this.tracked_symbols);
       this.investments_subject.next(this.investments_list);
 
       localStorage.setItem("page_state", JSON.stringify(this.page_state));
@@ -178,11 +166,13 @@ export class SupabaseService {
 
   update_overview(input: Graph): void
   {
+    // Overview is always custom graphs #1 (index 0)
     this.update_custom_graph(input, 0);
   }
 
   update_custom_graph(input: Graph, index: number): void
   {
+    // We use Object.assign() to ensure we don't change pointers/addresses
     Object.assign(this.custom_graphs[index], input)
 
     this.graph_subject.next(this.custom_graphs);
@@ -194,16 +184,14 @@ export class SupabaseService {
 
     let text = JSON.stringify(this.page_state);
 
-    console.log(text);
-
     localStorage.setItem("page_state", text);
   }
 
   new_user(): void
   {
-    console.log("Should be initial state", this.page_state);
+    // User has just logged in, but Supabase DB has no info for them, so we load local storage and
+    // populate the DB with that data as the initial state
     this.load_local();
-    console.log("Should be restored", this.page_state);
 
     // Register new user
     this.updateProfile({id: this.user?.id!, updated_at: new Date(), username: "New User"}).then(prof => {
@@ -218,30 +206,32 @@ export class SupabaseService {
           console.log("Should have id on first graph", this.page_state);
 
         // Register everything else
-        this.custom_graphs.forEach((graph, i) => {
-          if (i != 0)
-          {
-            this.updateGraph(graph).then(resp => {
-              let g = this.custom_graphs.find(i => i == graph);
-              if (!g?.id)
-              {
-                g!.id = resp.data![0].id;
-                console.log("assigned id", g?.id);
-                this.graph_subject.next(this.custom_graphs);
+        this.custom_graphs.slice(1).forEach(graph => {
+          this.updateGraph(graph).then(resp => {
 
-                console.log("Should have id on next graph", this.page_state);
-              }
-              else
-              {
-                console.log("ERROR", g);
-              }
-            });
-          }
+            // The following ensures that once each graph is registered in the DB, we locally assign each graph
+            // the id the database gave them.
+            let g = this.custom_graphs.find(i => i == graph);
+            if (!g?.id)
+            {
+              g!.id = resp.data![0].id;
+              console.log("assigned id", g?.id);
+              this.graph_subject.next(this.custom_graphs);
+
+              console.log("Should have id on next graph", this.page_state);
+            }
+            else
+            {
+              console.log("ERROR", g);
+            }
+          });
         });
         
         this.investments_list.forEach(investment => {
-          console.log(this.user?.id);
+
           this.updateInvestment({owner: this.user?.id!, options: investment}).then(resp => {
+
+            // Same as above, assign each investment/stock/symbol their id given by Supabase
             let target = this.investments_list.find(i => i == investment);
             if (!target?.id)
             {
@@ -263,30 +253,40 @@ export class SupabaseService {
 
   load_user(): void
   {
-    console.log("Should be inital state", this.page_state);
+    // Loads the data from Supabase
 
+    // I left in some old code here that shows how I originally wrote this, before I realized that
+    // because of the way I wanted the code to behave, I needed to be careful about how I change object pointers/addresses.
+    // The original code often assigned new objects, while the new code keeps the original objects
+    // whenever possible and focuses on instead transferring the data from object to object
+
+    // This handles Graphs, which covers the Overview graph and all other custom graphs
     this.graphs.then(resp => {
-      // console.log(resp)
 
       this.custom_graphs.length = 0;
 
       // this.custom_graphs = resp.data?.map(item => {return {id: item.id, ...item.options}}) as Graph[];
       resp.data?.map(item => {return {id: item.id, ...item.options} as Graph}).forEach(item => this.custom_graphs.push(item));
+      
+      // These are the few assignments we still need to do in order to preserve the special condition that
+      // custom graph #1 (index 0) is always the overview graph
       this.overview_state = this.custom_graphs[0];
-
-      this.page_state.custom_graphs = this.custom_graphs;
       this.page_state.overview_state = this.overview_state;
+
+      // this.page_state.custom_graphs = this.custom_graphs;
       // this.overview_state = this.custom_graphs[0];
+
+      // console.log("Check 1", this.custom_graphs === this.page_state.custom_graphs);
+      // console.log("Check 2", this.overview_state === this.page_state.custom_graphs[0]);
+      // console.log("Check 3", this.overview_state === this.page_state.overview_state);
+      // console.log("Check 4", this.page_state.overview_state === this.page_state.custom_graphs[0]);
 
       // console.log(this.custom_graphs, this.overview_state);
 
       this.graph_subject.next(this.custom_graphs);
-
-      console.log("Should have graphs loaded", this.page_state);
     });
 
     this.investments.then(resp => {
-      // console.log(resp)
 
       this.investments_list.length = 0;
 
@@ -297,12 +297,11 @@ export class SupabaseService {
       // this.tracked_symbols = this.investments_list.map(item => item.symbol);
       this.investments_list.map(item => item.symbol).forEach(item => this.tracked_symbols.push(item));
 
-      // console.log(this.investments_list, this.tracked_symbols);
+      // this.page_state.investments_list = this.investments_list;
+      // this.page_state.tracked_symbols = this.tracked_symbols;
 
-      this.page_state.investments_list = this.investments_list;
-      this.page_state.tracked_symbols = this.tracked_symbols;
-
-      console.log("Should have investments loaded", this.page_state);
+      // console.log("Check 1", this.investments_list === this.page_state.investments_list);
+      // console.log("Check 2", this.tracked_symbols === this.page_state.tracked_symbols);
 
       this.symbol_subject.next(this.tracked_symbols);
       this.investments_subject.next(this.investments_list);
@@ -313,16 +312,12 @@ export class SupabaseService {
   {
     let text = localStorage.getItem("page_state");
 
-    console.log(text);
-
     if (text)
     {
-      console.log("Should have initial state", this.page_state);
-
+      // We could have made a temporary object with the parsed data, and assigned that object's
+      // contents to page_state, but it was actually more concise here to simply reassign pointers/addresses
       this.page_state = JSON.parse(text);
 
-      console.log("Should have loaded local", this.page_state);
-  
       this.tracked_symbols = this.page_state.tracked_symbols;
       this.custom_graphs = this.page_state.custom_graphs;
       this.custom_graphs[0] = this.page_state.overview_state;

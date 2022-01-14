@@ -14,10 +14,11 @@ export class AppComponent {
 
   session = this.supabase.session;
 
-  constructor(
+  constructor
+  (
     private supabase: SupabaseService,
     private dummy: StockServerService,
-    )
+  )
   {
 
   }
@@ -26,16 +27,20 @@ export class AppComponent {
   {
     let logged_in_string = localStorage.getItem("signed_in");
 
+    // This configures the application to run the following function anytime Supabase reports a change in "login status"
     this.supabase.authChanges((_, session) => {
       this.session = session;
 
+      // If user is logged in...
       if (this.session)
       {
         this.supabase.profile.then(resp => {
+          // If user doesn't exist on DB yet, make a new entry with local storage data
           if (resp.error && !resp.body)
           {
             this.supabase.new_user();
           }
+          // If user does exist on DB, load data from DB
           else
           {
             this.supabase.load_user();
@@ -44,8 +49,10 @@ export class AppComponent {
       }
     });
 
+    // If user isn't logged in...
     if (!this.session)
     {
+      // If user isn't in the process of logging in...
       if (logged_in_string != "true")
       {
         this.supabase.load_local();
