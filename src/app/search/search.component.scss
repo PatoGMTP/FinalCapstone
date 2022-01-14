@@ -15,6 +15,20 @@
     background-color: gray;
 }
 
+.mat-form-field-infix
+{
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+
+    width: 100%;
+}
+
+.myinput
+{
+    flex: 1 0 0;
+}
+
 
 // .mat-chip-list-wrapper
 // {

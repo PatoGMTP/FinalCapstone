@@ -58,6 +58,7 @@ export class OverviewComponent implements OnInit {
   selected_interval: Interval_String = "5 minutes";
 
   type: "Fixed" | "Relative" = "Fixed";
+  types: string[] = ["Fixed", "Relative"];
   tracked_symbols: string[] = [];
   intervals: Interval_String[] = ["5 minutes", "15 minutes", "1 hour", "1 day"];
 
@@ -93,10 +94,16 @@ export class OverviewComponent implements OnInit {
       r: 45,
     },
     yaxis: {
+      fixedrange: false,
       tickprefix: "$",
     },
     xaxis: {
       autorange: true,
+      rangeslider: {
+        yaxis: {
+          rangemode: "auto",
+        },
+      },
       // title: 'Date',
       rangeselector: 
       {

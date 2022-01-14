@@ -21,11 +21,20 @@
 
     <div class="middle">
         <div class="top">
-            <button (click)="toggle_type()">{{type}}</button>
+            <mat-radio-group
+                aria-labelledby="date_type"
+                class="type_radio"
+                [(ngModel)]="type"
+                (change)="update()"
+            >
+                <mat-radio-button class="example-radio-button" *ngFor="let t of types" [value]="t">
+                    {{t}}
+                </mat-radio-button>
+            </mat-radio-group>
 
             <mat-form-field
                 appearance="fill"
-                *ngIf="type == 'Relative'"
+                class="top_form"
             >
                 <mat-label>Range</mat-label>
                 <mat-select
@@ -42,8 +51,21 @@
                 </mat-select>
             </mat-form-field>
 
-            <div *ngIf="type == 'Fixed'">
-                <mat-form-field appearance="fill" [formGroup]="date_range_ctrl">
+            <div>
+                <mat-form-field appearance="fill">
+                    <mat-label>Enter a date range</mat-label>
+                    <mat-date-range-input [formGroup]="date_range_ctrl" [rangePicker]="picker">
+                      <input matStartDate formControlName="start" placeholder="Start date" (dateChange)="update($event)">
+                      <input matEndDate formControlName="end" placeholder="End date" (dateChange)="update($event)">
+                    </mat-date-range-input>
+                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-date-range-picker #picker></mat-date-range-picker>
+                  
+                    <mat-error *ngIf="date_range_ctrl.controls['start'].hasError('matStartDateInvalid')">Invalid start date</mat-error>
+                    <mat-error *ngIf="date_range_ctrl.controls['end'].hasError('matEndDateInvalid')">Invalid end date</mat-error>
+                </mat-form-field>
+
+                <!-- <mat-form-field appearance="fill" [formGroup]="date_range_ctrl" class="top_form">
                     <mat-label>Enter a date range</mat-label>
 
                     <input
@@ -75,9 +97,9 @@
                     <mat-error *ngIf="date_range_ctrl.controls['start'].hasError('matStartDateInvalid')">Invalid start date
                     </mat-error>
                     <mat-error *ngIf="date_range_ctrl.controls['end'].hasError('matEndDateInvalid')">Invalid end date</mat-error>
-                </mat-form-field>
+                </mat-form-field> -->
 
-                <p>Selected range: {{date_range_ctrl.value | json}}</p>
+                <!-- <p>Selected range: {{date_range_ctrl.value | json}}</p> -->
             </div>
         </div>
 

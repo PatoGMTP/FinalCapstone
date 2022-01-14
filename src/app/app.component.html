@@ -2,9 +2,9 @@
   <!-- Header -->
 
   <div class="buttons">
-    <span class="title">
+    <button>
       {{title}}
-    </span>
+    </button>
     <button routerLink="home" routerLinkActive="highlight">
       Home
     </button>
@@ -14,18 +14,18 @@
     <button routerLink="investments" routerLinkActive="highlight">
       Investments
     </button>
-    <button routerLink="test" routerLinkActive="highlight">
+    <!-- <button routerLink="test" routerLinkActive="highlight">
       Test
-    </button>
+    </button> -->
     <button *ngIf="!session" (click)="login()">
       Login
     </button>
     <button *ngIf="session" (click)="logout()">
       Logout
     </button>
-    <button (click)="purge()">
+    <!-- <button (click)="purge()">
       Clear Local Storage
-    </button>
+    </button> -->
   </div>
 
 </header>

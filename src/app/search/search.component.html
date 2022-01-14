@@ -2,6 +2,7 @@
   <mat-form-field appearance="fill" class="myform" (click)="focus($event)">
     <mat-label>Tracked Stocks</mat-label>
     <input
+      class="myinput"
       placeholder="New Stock To Track..."
       #symbol_input
       [formControl]="symbol_ctrl"

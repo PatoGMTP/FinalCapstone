@@ -19,6 +19,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatNativeDateModule, NativeDateModule } from '@angular/material/core';
+import { MatRadioModule } from '@angular/material/radio';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -63,6 +64,7 @@ import { CommonModule } from '@angular/common';
     MatNativeDateModule,
     CommonModule,
     PlotlyModule,
+    MatRadioModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

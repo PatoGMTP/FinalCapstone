@@ -9,6 +9,8 @@
         flex-flow: row;
 
         justify-content: center;
+
+        padding-bottom: 10px;
     
         .left
         {
@@ -31,6 +33,18 @@
             {
                 display: flex;
                 flex-flow: row;
+                justify-content: center;
+                gap: 20px;
+
+                padding: 5px 0px;
+
+                mat-radio-group
+                {
+                    display: flex;
+                    flex-flow: row;
+                    gap: 5px;
+                    align-items: center;
+                }
             }
         }
     
