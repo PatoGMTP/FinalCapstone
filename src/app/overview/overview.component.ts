@@ -82,11 +82,16 @@ export class OverviewComponent implements OnInit {
 
   line_data: {}[] = [];
 
-  layout: {width: number, height: number, title: string, yaxis: Object, xaxis: Object} =
+  layout: {width: number, height: number, title: string, margin: Object, yaxis: Object, xaxis: Object} =
   {
     width: 1200,
     height: 550,
     title: '',
+    margin: {
+      b: 25,
+      l: 45,
+      r: 45,
+    },
     yaxis: {
       tickprefix: "$",
     },

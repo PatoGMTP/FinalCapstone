@@ -75,11 +75,16 @@ export class SearchComponent implements OnInit {
     }
   }
 
+  focus(event: any): void
+  {
+    this.symbol_input.nativeElement.blur();
+    this.symbol_input.nativeElement.focus();
+  }
+
   private _filter(value: string): string[]
   {
     const filterValue = value.toLowerCase();
 
     return this.all_symbols.filter(symbol => symbol.toLowerCase().includes(filterValue));
   }
-
 }

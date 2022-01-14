@@ -80,8 +80,6 @@ export class StockServerService {
               this.live_updates.next(this.live_data);
               console.log(this.live_data);
 
-              localStorage.setItem("local_hist_data", JSON.stringify(this.live_data));
-
               this.symbols.forEach(sym => sym.updated = false);
             }
           }

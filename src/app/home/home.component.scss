@@ -3,10 +3,13 @@
     height: 100%;
     display: grid;
     grid-template-rows: auto 1fr;
+    justify-content: center;
+    gap: 10px;
 
     .search
     {
         display: flex;
         flex-flow: column;
+        align-items: center;
     }
 }
