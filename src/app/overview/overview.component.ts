@@ -3,10 +3,8 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { Interval_Number, Interval_String, Range_Number, Range_String } from '../intervalType';
 import { Graph } from '../graphInt';
 import { SupabaseService } from '../supabase.service';
-import { stat } from 'fs';
-import { start } from 'repl';
 import { StockServerService } from '../stock-server.service';
-import { DataPoint, DataPoint_N } from '../serverInts';
+import { DataPoint_N } from '../serverInts';
 
 @Component({
   selector: 'app-overview',
@@ -40,14 +38,14 @@ export class OverviewComponent implements OnInit {
     {value: 1209600000, view_value: "Last 2 Weeks"},
   ]
 
-  obj: {[N in Range_Number]: Range_String} = {
+  range_n_to_s: {[N in Range_Number]: Range_String} = {
     86400000 : "Last 24 hours",
     259200000 : "Last 3 Days",
     604800000 : "Last Week",
     1209600000 : "Last 2 Weeks",
   }
 
-  decode: {[K in Interval_String]: Interval_Number} =
+  interval_s_to_n: {[K in Interval_String]: Interval_Number} =
   {
     "5 minutes": 300000,
     "15 minutes": 900000,
@@ -63,7 +61,7 @@ export class OverviewComponent implements OnInit {
   tracked_symbols: string[] = [];
   intervals: Interval_String[] = ["5 minutes", "15 minutes", "1 hour", "1 day"];
 
-  data: {x: Date[], open: number[], close: number[], high: number[], low: number[], type: string}[] =
+  candle_data: {x: Date[], open: number[], close: number[], high: number[], low: number[], type: string}[] =
   [
     { x: [], open: [], close: [], high: [], low: [], type: 'candlestick'}
   ];
@@ -84,20 +82,23 @@ export class OverviewComponent implements OnInit {
 
   line_data: {}[] = [];
 
-  layout: {width: number, height: number, title: string, xaxis: Object} =
+  layout: {width: number, height: number, title: string, yaxis: Object, xaxis: Object} =
   {
-    width: 800,
-    height: 500,
-    title: 'A Fancy Plot',
+    width: 1200,
+    height: 550,
+    title: '',
+    yaxis: {
+      tickprefix: "$",
+    },
     xaxis: {
       autorange: true,
-      title: 'Date',
+      // title: 'Date',
       rangeselector: 
       {
         x: 0,
         y: 1.2,
         xanchor: 'left',
-        font: {size:8},
+        font: {size:12},
         buttons: [
           {
             step: 'hour',
@@ -138,15 +139,15 @@ export class OverviewComponent implements OnInit {
     },
   };
 
-  scatter = 
+  line_graph = 
   {
     data: this.line_data,
     layout: this.layout,
   };
 
-  graph = 
+  candle_graph = 
   {
-    data: this.data,
+    data: this.candle_data,
     layout: this.layout,
   };
 
@@ -164,11 +165,13 @@ export class OverviewComponent implements OnInit {
 
   ngOnInit(): void
   {
+    // Get updates about what symbols are being tracked
     this.supabase.symbol_subject.subscribe(items => {
       this.tracked_symbols = ["All", ...items];
 
-      console.log(this.tracked_symbols, this.selected_symbol);
+      // console.log(this.tracked_symbols, this.selected_symbol);
 
+      // If the currently displayed symbol is no longer tracked, switch to "All"
       if (!this.tracked_symbols.includes(this.selected_symbol))
       {
         this.selected_symbol = this.tracked_symbols[0];
@@ -179,13 +182,18 @@ export class OverviewComponent implements OnInit {
           this.selected_symbol = this.tracked_symbols[0];
         }, 10);
       }
+      // If we're displaying "All", we definitely had some changes happen to the line graph if the tracked symbols changed
       else if (this.selected_symbol == "All")
       {
         this.update_graph();
       }
     });
 
+    // This sends updates about what the graph should look like. Often times this just sends back
+    // a graph object that's the same as the one we have already stored, but this ensures the
+    // service is always the one providing/controlling the data
     this.supabase.graph_subject.subscribe(items => {
+      // Item 0 is always the "overview_state"
       this.state = items[0];
 
       // console.log(items[0].id, this.state.id);
@@ -200,11 +208,12 @@ export class OverviewComponent implements OnInit {
       }, 10);
 
       this.selected_symbol = this.state.symbol;
-      this.selected_range = this.obj[this.state.range_number];
+      this.selected_range = this.range_n_to_s[this.state.range_number];
       this.selected_interval = this.state.interval;
       this.type = this.state.range_type;
     });
 
+    // Gets the latest data from the stock server service
     this.dummy.live_updates.subscribe(data => {
       this.all_data = data;
 
@@ -216,6 +225,7 @@ export class OverviewComponent implements OnInit {
 
   update_graph(): void
   {
+    // If we're not tracking any stocks, just exit
     if (this.tracked_symbols.length == 1) return;
 
     let cur_data: DataPoint_N[];
@@ -223,9 +233,18 @@ export class OverviewComponent implements OnInit {
     let start_index: number;
     let end_index: number;
 
+    // Sometimes the tracked stocks will be loaded but not their data, so we exit if their data is missing
     if (!this.all_data[this.tracked_symbols[1]]) return;
 
+    // This simply gets the number of datapoints available for each stock, which is often the same for all stocks
     let len = this.all_data[this.tracked_symbols[1]].length;
+
+    // The following code all does a similar thing: converts some time range into an index for the stock server
+    // data. This often involves dividing something by 60_000, as that's the number of milliseconds in a minute,
+    // and the stock server has data in intervals of a minute.
+
+    // Some indexes also have a +-2, this is because the code currently makes one less datapoint than expected 
+    // without that, likely something in the code below needs to be fixed but having the +-2 currently gets around this.
 
     if (this.type == "Relative")
     {
@@ -235,15 +254,16 @@ export class OverviewComponent implements OnInit {
     }
     else
     {
+      // The .setHours(0, 0, 0, 0) converts the date to local time and sets it to 12am
       let today = new Date().setHours(0, 0, 0, 0);
       let minutes_so_far = -1;
 
+      // Finds the number of minutes that have passed today
       for (let i = len - 1; i >= 0; i--)
       {
         if (new Date(this.all_data[this.tracked_symbols[1]][i].timestamp).getTime() == today)
         {
           minutes_so_far = len - i;
-          console.log("time zero?", this.all_data[this.tracked_symbols[1]][i]);
         }
       }
 
@@ -270,8 +290,12 @@ export class OverviewComponent implements OnInit {
 
     if (this.selected_symbol == "All")
     {
-      this.scatter.data = [];
-      let i = 0;
+      this.layout.title = "Median Stock Price";
+      this.line_graph.data = [];
+
+      // This is used to make each line on the graph slightly different
+      let z = 0;
+
       this.tracked_symbols.slice(1).forEach(sym => {
         cur_data = this.all_data[sym].slice(start_index, end_index);
 
@@ -279,8 +303,9 @@ export class OverviewComponent implements OnInit {
         let times: Date[] = [];
   
         len = cur_data.length;
-        let iter = (this.decode[this.selected_interval] / 60000);
-  
+        let iter = (this.interval_s_to_n[this.selected_interval] / 60000);
+
+        // This gets an average of the open and close to use as the datapoint
         for (let i = iter; i < len; i += iter)
         {
           let avg = (cur_data[i-iter].open + cur_data[i-iter].close) / 2;
@@ -288,7 +313,7 @@ export class OverviewComponent implements OnInit {
           times.push(cur_data[i-iter].timestamp);
         }
 
-        this.scatter.data.push(
+        this.line_graph.data.push(
           {
             x: times,
             y: y,
@@ -298,23 +323,17 @@ export class OverviewComponent implements OnInit {
               size: 2,
             },
             line: {
-              dash: this.dashes[i],
-              width: i+1,
+              dash: this.dashes[z],
+              width: z+1,
             }
           }
         );
-        i == 2 ? i = 0 : i++;
+        z == 2 ? z = 0 : z++;
       });
-
-      // setTimeout(() => {
-      //   this.selected_symbol = "";
-      //   setTimeout(() => {
-      //     this.selected_symbol = "All";
-      //   }, 10);
-      // }, 10);
     }
     else if (this.all_data[this.selected_symbol])
     {
+      this.layout.title = this.selected_symbol;
       cur_data = this.all_data[this.selected_symbol].slice(start_index, end_index);
 
       let open: number[] = [];
@@ -324,7 +343,7 @@ export class OverviewComponent implements OnInit {
       let times: Date[] = [];
 
       len = cur_data.length;
-      let iter = (this.decode[this.selected_interval] / 60000);
+      let iter = (this.interval_s_to_n[this.selected_interval] / 60000);
 
       for (let i = iter; i < len; i += iter)
       {
@@ -335,11 +354,11 @@ export class OverviewComponent implements OnInit {
         times.push(cur_data[i-iter].timestamp);
       }
 
-      this.graph.data[0].open = open;
-      this.graph.data[0].close = close;
-      this.graph.data[0].high = high;
-      this.graph.data[0].low = low;
-      this.graph.data[0].x = times;
+      this.candle_graph.data[0].open = open;
+      this.candle_graph.data[0].close = close;
+      this.candle_graph.data[0].high = high;
+      this.candle_graph.data[0].low = low;
+      this.candle_graph.data[0].x = times;
     }
   }
 

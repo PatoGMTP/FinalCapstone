@@ -1,40 +1,48 @@
-.outer
+:host
 {
-    display: flex;
-    flex-flow: row;
+    height: 100%;
 
-    .left
+    .outer
     {
-        background-color: lightcoral;
-        .symbols
-        {
-            display: flex;
-            flex-flow: column;
-        }
-    }
-
-    .middle
-    {
-        background-color: dimgrey;
-
+        height: 100%;
         display: flex;
-        flex-flow: column;
+        flex-flow: row;
 
-        .top
+        justify-content: center;
+    
+        .left
         {
-            display: flex;
-            flex-flow: row;
+            background-color: lightcoral;
+            .symbols
+            {
+                display: flex;
+                flex-flow: column;
+            }
         }
-    }
-
-    .right
-    {
-        background-color: lightsalmon;
-
-        .intervals
+    
+        .middle
         {
+            background-color: dimgrey;
+    
             display: flex;
             flex-flow: column;
+    
+            .top
+            {
+                display: flex;
+                flex-flow: row;
+            }
+        }
+    
+        .right
+        {
+            background-color: lightsalmon;
+    
+            .intervals
+            {
+                display: flex;
+                flex-flow: column;
+            }
         }
     }
 }

@@ -2,7 +2,31 @@
 {
     height: 100%;
     display: grid;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto 1fr;
+
+    header
+    {
+        font-family: 'Monda', sans-serif;
+
+        .buttons
+        {
+            display: flex;
+            flex-flow: row;
+            gap: 10px;
+            justify-content: center;
+
+            & > *
+            {
+                padding: 5px 0;
+            }
+
+            button
+            {
+                border: none;
+                text-decoration: none;
+            }
+        }
+    }
 }
 
 .highlight

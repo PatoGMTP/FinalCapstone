@@ -83,14 +83,14 @@
 
         <div class="graph">
             <plotly-plot
-                [data]="graph.data"
-                [layout]="graph.layout"
+                [data]="candle_graph.data"
+                [layout]="candle_graph.layout"
                 *ngIf="selected_symbol != 'All'"
             ></plotly-plot>
 
             <plotly-plot
-                [data]="scatter.data"
-                [layout]="scatter.layout"
+                [data]="line_graph.data"
+                [layout]="line_graph.layout"
                 *ngIf="selected_symbol == 'All'"
             ></plotly-plot>
         </div>
