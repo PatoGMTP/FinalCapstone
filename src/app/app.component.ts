@@ -8,7 +8,7 @@ import { SupabaseService } from './supabase.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'FinalCapstone';
+  title = 'Stock Stream';
 
   logged_in: boolean = false;
 

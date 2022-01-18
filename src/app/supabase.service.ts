@@ -101,7 +101,9 @@ export class SupabaseService {
         {
           investment.id = resp.data[0].id
           console.log("assigned id", investment.id, investment);
+
           this.investments_subject.next(this.page_state.investments_list);
+          localStorage.setItem("page_state", JSON.stringify(this.page_state));
         }
         else
         {
@@ -172,6 +174,36 @@ export class SupabaseService {
     }
   }
 
+  add_graph(input: Graph): void
+  {
+    this.page_state.custom_graphs.push(input);
+    
+    if (this.session)
+    {
+      this.updateGraph(input).then(resp => {
+  
+        // The following ensures that once each graph is registered in the DB, we locally assign each graph
+        // the id the database gave them.
+        if (resp.data)
+        {
+          input.id = resp.data[0].id
+          console.log("assigned id", input.id, input);
+
+          this.graph_subject.next(this.page_state.custom_graphs);
+          localStorage.setItem("page_state", JSON.stringify(this.page_state));
+        }
+        else
+        {
+          console.log("ERROR! (Custom Graph):", resp, input);
+        }
+      });
+    }
+
+    this.graph_subject.next(this.page_state.custom_graphs);
+
+    localStorage.setItem("page_state", JSON.stringify(this.page_state));
+  }
+
   update_overview(input: Graph): void
   {
     // Overview is always custom graphs #1 (index 0)
@@ -227,7 +259,9 @@ export class SupabaseService {
             {
               graph.id = resp.data[0].id
               console.log("assigned id", graph.id, graph);
+
               this.graph_subject.next(this.page_state.custom_graphs);
+              localStorage.setItem("page_state", JSON.stringify(this.page_state));
             }
             else
             {
@@ -245,7 +279,9 @@ export class SupabaseService {
             {
               investment.id = resp.data[0].id
               console.log("assigned id", investment.id, investment);
+
               this.investments_subject.next(this.page_state.investments_list);
+              localStorage.setItem("page_state", JSON.stringify(this.page_state));
             }
             else
             {
@@ -264,6 +300,7 @@ export class SupabaseService {
     this.graphs.then(resp => {
       // Load data from DB
       this.page_state.custom_graphs = resp.data?.map(item => {return {id: item.id, ...item.options}}) as Graph[];
+      this.page_state.custom_graphs.sort((a, b) => a.id! - b.id!);
 
       // Let subscribers know about changes
       this.graph_subject.next(this.page_state.custom_graphs);

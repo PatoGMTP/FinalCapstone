@@ -5,6 +5,9 @@ import { Graph } from '../graphInt';
 import { SupabaseService } from '../supabase.service';
 import { StockServerService } from '../stock-server.service';
 import { DataPoint_N, SERVER_DATA_FREQUENCY } from '../serverInts';
+import { overview_layout, Plotly_Layout } from '../overviewLayout';
+import { interval_s_to_n, ranges, range_n_to_s } from '../conversions';
+import { Candle_Data } from '../candlestickDataInt';
 
 @Component({
   selector: 'app-overview',
@@ -20,38 +23,15 @@ export class OverviewComponent implements OnInit {
     end: new FormControl(),
   });
 
-  milliseconds_per_second = 1000;
-  milliseconds_per_minute = this.milliseconds_per_second * 60; // 60000
-  milliseconds_per_hour = this.milliseconds_per_minute * 60; // 3600000
-  milliseconds_per_day = this.milliseconds_per_hour * 24; // 86400000
-  milliseconds_per_week = this.milliseconds_per_day * 7; // 604800000
-  milliseconds_per_month = this.milliseconds_per_day * 30; // 2592000000
-  milliseconds_per_quarter = this.milliseconds_per_day * 90; // 7776000000
+  milliseconds_per_day = 1_000 * 60 * 60 * 24;
 
   number_range_ctrl = new FormControl(this.milliseconds_per_day);
 
-  ranges: {value: Range_Number, view_value: Range_String}[] =
-  [
-    {value: 86400000, view_value: "Last 24 hours"},
-    {value: 259200000, view_value: "Last 3 Days"},
-    {value: 604800000, view_value: "Last Week"},
-    {value: 1209600000, view_value: "Last 2 Weeks"},
-  ]
+  ranges: {value: Range_Number, view_value: Range_String}[] = ranges;
 
-  range_n_to_s: {[N in Range_Number]: Range_String} = {
-    86400000 : "Last 24 hours",
-    259200000 : "Last 3 Days",
-    604800000 : "Last Week",
-    1209600000 : "Last 2 Weeks",
-  }
+  range_n_to_s: {[N in Range_Number]: Range_String} = range_n_to_s;
 
-  interval_s_to_n: {[K in Interval_String]: Interval_Number} =
-  {
-    "5 minutes": 300000,
-    "15 minutes": 900000,
-    "1 hour": 3600000, 
-    "1 day": 86400000,
-  }
+  interval_s_to_n: {[K in Interval_String]: Interval_Number} = interval_s_to_n;
 
   selected_range: Range_String = "Last 24 hours";
   selected_symbol: string = "All";
@@ -62,7 +42,7 @@ export class OverviewComponent implements OnInit {
   tracked_symbols: string[] = [];
   intervals: Interval_String[] = ["5 minutes", "15 minutes", "1 hour", "1 day"];
 
-  candle_data: {x: Date[], open: number[], close: number[], high: number[], low: number[], type: string}[] =
+  candle_data: Candle_Data[] =
   [
     { x: [], open: [], close: [], high: [], low: [], type: 'candlestick'}
   ];
@@ -83,73 +63,7 @@ export class OverviewComponent implements OnInit {
 
   line_data: {}[] = [];
 
-  layout: {width: number, height: number, title: string, margin: Object, yaxis: Object, xaxis: Object} =
-  {
-    width: 1200,
-    height: 550,
-    title: '',
-    margin: {
-      b: 25,
-      l: 45,
-      r: 45,
-    },
-    yaxis: {
-      fixedrange: false,
-      tickprefix: "$",
-    },
-    xaxis: {
-      autorange: true,
-      rangeslider: {
-        yaxis: {
-          rangemode: "auto",
-        },
-      },
-      // title: 'Date',
-      rangeselector: 
-      {
-        x: 0,
-        y: 1.2,
-        xanchor: 'left',
-        font: {size:12},
-        buttons: [
-          {
-            step: 'hour',
-            stepmode: 'backward',
-            count: 3,
-            label: '3 hours'
-          },
-          {
-            step: 'hour',
-            stepmode: 'backward',
-            count: 6,
-            label: '6 hours'
-          },
-          {
-            step: 'hour',
-            stepmode: 'backward',
-            count: 12,
-            label: '12 hours'
-          },
-          {
-            step: 'day',
-            stepmode: 'backward',
-            count: 1,
-            label: '1 day'
-          },
-          {
-            step: 'day',
-            stepmode: 'backward',
-            count: 5,
-            label: '5 days'
-          },
-          {
-            step: 'all',
-            label: 'All dates'
-          }
-        ]
-      }
-    },
-  };
+  layout: Plotly_Layout = overview_layout;
 
   line_graph = 
   {
@@ -249,7 +163,7 @@ export class OverviewComponent implements OnInit {
     // Sometimes the tracked stocks will be loaded but not their data, so we exit if their data is missing
     if (!this.all_data[this.tracked_symbols[1]]) return;
 
-    // This simply gets the number of datapoints available for each stock, which is often the same for all stocks
+    // This simply gets the number of datapoints available for each stock, which is the same for all stocks
     let len = this.all_data[this.tracked_symbols[1]].length;
 
     // The following code all does a similar thing: converts some time range into an index for the stock server
@@ -285,15 +199,17 @@ export class OverviewComponent implements OnInit {
       start_index = len - (((today - s) / SERVER_DATA_FREQUENCY) + minutes_so_far);
       end_index = len - (((today - e) / SERVER_DATA_FREQUENCY) + minutes_so_far - 2);
 
-      if (start_index > len)
+      if (start_index > len || start_index < 0)
       {
         start_index = 0;
       }
 
-      if (end_index > len)
+      if (end_index > len || end_index < 0)
       {
         end_index = len;
       }
+
+      console.log(start_index, end_index, len);
     }
 
     if (this.selected_symbol == "All")
@@ -336,7 +252,7 @@ export class OverviewComponent implements OnInit {
             }
           }
         );
-        z == 2 ? z = 0 : z++;
+        // z == 2 ? z = 0 : z++;
       });
     }
     else if (this.all_data[this.selected_symbol])

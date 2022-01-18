@@ -15,10 +15,13 @@
         {{symbol}}
       </mat-option>
     </mat-autocomplete>
-    <mat-chip-list #chipList aria-label="Symbol selection">
-        <div class="chips">
+    <mat-chip-list #chipList aria-label="Symbol selection" multiple>
+        <div class="chips" #chips>
             <mat-chip
+              color="primary"
               *ngFor="let symbol of tracked_symbols"
+              [selected]="special"
+              (selectionChange)="reselect($event)"
               (removed)="remove(symbol)">
               {{symbol}}
               <button matChipRemove>

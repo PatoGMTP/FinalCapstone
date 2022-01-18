@@ -3,7 +3,7 @@ import { FormControl } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { MatChipInputEvent } from '@angular/material/chips';
+import { MatChip, MatChipInputEvent } from '@angular/material/chips';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { SupabaseService } from '../supabase.service';
 import { StockServerService } from '../stock-server.service';
@@ -20,14 +20,19 @@ export class SearchComponent implements OnInit {
   symbol_ctrl = new FormControl();
   filtered_symbols: Observable<string[]> = new Observable<string[]>();
   @ViewChild('symbol_input') symbol_input!: ElementRef<HTMLInputElement>;
+  @ViewChild('chips') chips!: ElementRef<HTMLDivElement>;
   separatorKeysCodes: number[] = [ENTER, COMMA];
+
+  special = true;
 
   constructor(private supabase: SupabaseService, private dummy: StockServerService)
   {
   }
 
   ngOnInit(): void {
-    this.supabase.symbol_subject.subscribe(list => this.tracked_symbols = list);
+    this.supabase.symbol_subject.subscribe(list => {
+      this.tracked_symbols = list;
+    });
 
     this.dummy.symbol_updates.subscribe(symbols => {
       this.all_symbols = symbols;
@@ -79,6 +84,14 @@ export class SearchComponent implements OnInit {
   {
     this.symbol_input.nativeElement.blur();
     this.symbol_input.nativeElement.focus();
+  }
+
+  reselect(evt: any): void
+  {
+    if (!evt.selected)
+    {
+      evt.source.select();
+    }
   }
 
   private _filter(value: string): string[]

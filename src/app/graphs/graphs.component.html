@@ -1,9 +1,101 @@
-<div class="rows" *ngFor="let row of rows">
+<!-- <div class="rows" *ngFor="let row of rows">
     <div class="left">
         left {{row}}
     </div>
 
     <div class="right">
         right {{row}}
+    </div>
+</div> -->
+
+<div class="existing" *ngFor="let cg of candle_graphs; index as i">
+    <div>
+        <plotly-plot
+            [data]="cg.data"
+            [layout]="cg.layout"
+        ></plotly-plot>
+    </div>
+</div>
+
+<div class="new_graph">
+    <div class="one">
+        <mat-form-field appearance="fill">
+            <mat-label>Stock</mat-label>
+            <mat-select
+                [formControl]="new_symbol_ctrl"
+            >
+                <mat-option
+                    *ngFor="let sym of tracked_symbols"
+                    [value]="sym"
+                >
+                    {{sym}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+    
+    <div class="two">
+        <mat-radio-group
+            aria-labelledby="date_type"
+            class="type_radio"
+            [(ngModel)]="new_type"
+        >
+            <mat-radio-button class="example-radio-button" *ngFor="let t of types" [value]="t">
+                {{t}}
+            </mat-radio-button>
+        </mat-radio-group>
+    </div>
+    
+    <div class="three">
+        <mat-form-field appearance="fill">
+            <mat-label>Relative Range</mat-label>
+            <mat-select
+                [formControl]="new_number_range_ctrl"
+                [disabled]="new_type == 'Fixed'"
+            >
+                <mat-option
+                    *ngFor="let range of ranges"
+                    [value]="range.value"
+                >
+                    {{range.view_value}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+    
+    <div class="four">
+        <mat-form-field appearance="fill">
+            <mat-label>Enter a date range</mat-label>
+            <mat-date-range-input [formGroup]="new_date_range_ctrl" [rangePicker]="picker" 
+            [disabled]="new_type == 'Relative'">
+                <input matStartDate formControlName="start" placeholder="Start date">
+                <input matEndDate formControlName="end" placeholder="End date">
+            </mat-date-range-input>
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-date-range-picker #picker></mat-date-range-picker>
+            
+            <mat-error *ngIf="new_date_range_ctrl.controls['start'].hasError('matStartDateInvalid')">Invalid start date</mat-error>
+            <mat-error *ngIf="new_date_range_ctrl.controls['end'].hasError('matEndDateInvalid')">Invalid end date</mat-error>
+        </mat-form-field>
+    </div>
+    
+    <div class="five">
+        <mat-form-field appearance="fill">
+            <mat-label>Interval</mat-label>
+            <mat-select
+                [formControl]="new_interval_ctrl"
+            >
+                <mat-option
+                    *ngFor="let int of intervals"
+                    [value]="int.view_value"
+                >
+                    {{int.view_value}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+    
+    <div class="six">
+        <button (click)="submit()">Submit!</button>
     </div>
 </div>

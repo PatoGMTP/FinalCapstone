@@ -1,6 +1,24 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+// @include mat.core();
+@import 'src/styles';
+
+$color-config:    mat.get-color-config($my-theme);
+$primary: map.get($color-config, 'primary');
+$accent:  map.get($color-config, 'accent');
+$warn:    map.get($color-config, 'warn');
+
+.top_form
+{
+    background-color: mat.get-color-from-palette($accent) !important;
+    color: mat.get-color-from-palette($accent, default-contrast) !important;
+}
+
 :host
 {
     height: 100%;
+
+    // padding-bottom: 20px;
 
     .outer
     {
@@ -9,26 +27,43 @@
         flex-flow: row;
         gap: 10px;
 
-        padding: 5px;
-        background-color: black;
+        padding: 10px;
+        padding-top: 0px;
+        background-color: mat.get-color-from-palette($accent, 200);
+        border-radius: 10px;
 
         justify-content: center;
-
-        padding-bottom: 10px;
     
         .left
         {
-            background-color: lightcoral;
+            background-color: mat.get-color-from-palette($accent, 200);
+
+            // display: flex;
+            // align-items: center;
+
+            padding-top: 63px;
+
             .symbols
             {
                 display: flex;
                 flex-flow: column;
+
+                // .mat-button-toggle {
+                // background-color: mat.get-color-from-palette($primary);
+                // color: mat.get-color-from-palette($primary, default-contrast);
+                // }
+            
+                .mat-button-toggle-checked
+                {
+                    background-color: mat.get-color-from-palette($accent);
+                    color: mat.get-color-from-palette($accent, default-contrast);
+                }
             }
         }
     
         .middle
         {
-            background-color: dimgrey;
+            // background-color: dimgrey;
     
             display: flex;
             flex-flow: column;
@@ -54,12 +89,19 @@
     
         .right
         {
-            background-color: lightsalmon;
+            background-color: mat.get-color-from-palette($accent, 200);
+
+            padding-top: 63px;
     
             .intervals
             {
                 display: flex;
                 flex-flow: column;
+            
+                .mat-button-toggle-checked {
+                    background-color: mat.get-color-from-palette($accent);
+                    color: mat.get-color-from-palette($accent, default-contrast);
+                    }
             }
         }
     }

@@ -1,3 +1,13 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+// @include mat.core();
+@import 'src/styles';
+
+$color-config:    mat.get-color-config($my-theme);
+$primary: map.get($color-config, 'primary');
+$accent:  map.get($color-config, 'accent');
+$warn:    map.get($color-config, 'warn');
+
 :host
 {
     width: 100%;
@@ -12,7 +22,8 @@
 
 .myform
 {
-    background-color: gray;
+    background-color: mat.get-color-from-palette($accent, 200);
+    border-radius: 10px;
 }
 
 .mat-form-field-infix

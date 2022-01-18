@@ -1,3 +1,28 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+$my-primary: mat.define-palette(mat.$indigo-palette);
+$my-accent: mat.define-palette(mat.$pink-palette);
+
+$my-theme: mat.define-light-theme((
+ color: (
+   primary: $my-primary,
+   accent: $my-primary,
+   warn: $my-primary,
+ )
+));
+
+$color-config:    mat.get-color-config($my-theme);
+$primary: map.get($color-config, 'primary');
+$accent:  map.get($color-config, 'accent');
+$warn:    map.get($color-config, 'warn');
+
+// $is-dark-theme:   map.get($color-config, 'is-dark');
+
+@include mat.all-component-themes($my-theme);
+
 /* You can add global styles to this file, and also import other style files */
 *
 {
@@ -8,6 +33,17 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+body::-webkit-scrollbar {
+display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+body {
+-ms-overflow-style: none;  /* IE and Edge */
+scrollbar-width: none;  /* Firefox */
+}
 
 .mat-form-field-wrapper
 {
@@ -30,4 +66,35 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     display: flex !important; 
     flex-flow: column;
     align-items: center !important;
+}
+
+.mat-select-value
+{
+    color: inherit;
+}
+
+.mat-date-range-input-separator
+{
+    color: inherit;
+}
+
+.mat-select-arrow
+{
+    color: inherit;
+}
+
+.mat-button-toggle-group
+{
+    // gap: 20px;
+    // border: none;
+}
+
+.mat-input-element
+{
+    color: black;
+    
+    &::placeholder
+    {
+        color: black;
+    }
 }

@@ -1,3 +1,13 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+// @include mat.core();
+@import 'src/styles';
+
+$color-config:    mat.get-color-config($my-theme);
+$primary: map.get($color-config, 'primary');
+$accent:  map.get($color-config, 'accent');
+$warn:    map.get($color-config, 'warn');
+
 :host
 {
     height: 100%;
@@ -10,6 +20,8 @@
     {
         font-family: 'Monda', sans-serif !important;
         font-size: large !important;
+    
+        background-color: mat.get-color-from-palette($accent, 200);
 
         .buttons
         {
@@ -18,10 +30,18 @@
             gap: 10px;
             justify-content: center;
 
+            padding: 5px 0px;
+
+            .title
+            {
+                background-color: mat.get-color-from-palette($accent, 200);
+                // color: mat.get-color-from-palette($accent, default-contrast);
+            }
+
             & > *
             {
                 height: 100%;
-                padding: 5px 0;
+                padding: 5px;
 
                 display: flex;
                 align-items: center;
@@ -40,5 +60,6 @@
 
 .highlight
 {
-    background-color: lightblue;
+    background-color: mat.get-color-from-palette($accent);
+    color: mat.get-color-from-palette($accent, default-contrast);
 }

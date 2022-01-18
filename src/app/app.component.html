@@ -2,7 +2,7 @@
   <!-- Header -->
 
   <div class="buttons">
-    <button>
+    <button class="title">
       {{title}}
     </button>
     <button routerLink="home" routerLinkActive="highlight">
@@ -14,9 +14,9 @@
     <button routerLink="investments" routerLinkActive="highlight">
       Investments
     </button>
-    <!-- <button routerLink="test" routerLinkActive="highlight">
+    <button routerLink="test" routerLinkActive="highlight">
       Test
-    </button> -->
+    </button>
     <button *ngIf="!session" (click)="login()">
       Login
     </button>
