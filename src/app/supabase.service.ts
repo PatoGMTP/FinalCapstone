@@ -113,6 +113,7 @@ export class SupabaseService {
     }
 
     this.symbol_subject.next(this.page_state.tracked_symbols);
+    this.investments_subject.next(this.page_state.investments_list);
 
     localStorage.setItem("page_state", JSON.stringify(this.page_state));
   }
