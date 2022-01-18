@@ -27,8 +27,8 @@
         <!-- Symbol Column -->
         <ng-container [matColumnDef]="headers[3]">
             <mat-header-cell *matHeaderCellDef> {{headers[3]}} </mat-header-cell>
-            <mat-cell *matCellDef="let element" [ngClass]="element[headers[3]] >= 0 ? 'up' : 'down'"> {{element[headers[3]] | currency}} </mat-cell>
-            <mat-footer-cell *matFooterCellDef [ngClass]="total_value() >= 0 ? 'up' : 'down'">{{total_value() | currency}}</mat-footer-cell>
+            <mat-cell *matCellDef="let element"> {{element[headers[3]] | currency}} </mat-cell>
+            <mat-footer-cell *matFooterCellDef>{{total_value() | currency}}</mat-footer-cell>
         </ng-container>
         
         <!-- Symbol Column -->
