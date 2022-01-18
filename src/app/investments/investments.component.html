@@ -5,6 +5,7 @@
         <ng-container [matColumnDef]="headers[0]">
             <mat-header-cell *matHeaderCellDef> {{headers[0]}} </mat-header-cell>
             <mat-cell *matCellDef="let element"> {{element[headers[0]]}} </mat-cell>
+            <mat-footer-cell *matFooterCellDef> Total </mat-footer-cell>
         </ng-container>
         
         <!-- Name Column -->
@@ -13,33 +14,39 @@
             <mat-cell *matCellDef="let element">
                 <input matInput [(ngModel)]="element[headers[1]]" (change)="update(element[headers[0]])" type="number">
             </mat-cell>
+            <mat-footer-cell *matFooterCellDef></mat-footer-cell>
         </ng-container>
         
         <!-- Weight Column -->
         <ng-container [matColumnDef]="headers[2]">
             <mat-header-cell *matHeaderCellDef> {{headers[2]}} </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element[headers[2]]}} </mat-cell>
+            <mat-cell *matCellDef="let element"> {{element[headers[2]] | currency}} </mat-cell>
+            <mat-footer-cell *matFooterCellDef></mat-footer-cell>
         </ng-container>
         
         <!-- Symbol Column -->
         <ng-container [matColumnDef]="headers[3]">
             <mat-header-cell *matHeaderCellDef> {{headers[3]}} </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element[headers[3]]}} </mat-cell>
+            <mat-cell *matCellDef="let element" [ngClass]="element[headers[3]] >= 0 ? 'up' : 'down'"> {{element[headers[3]] | currency}} </mat-cell>
+            <mat-footer-cell *matFooterCellDef [ngClass]="total_value() >= 0 ? 'up' : 'down'">{{total_value() | currency}}</mat-footer-cell>
         </ng-container>
         
         <!-- Symbol Column -->
         <ng-container [matColumnDef]="headers[4]">
             <mat-header-cell *matHeaderCellDef> {{headers[4]}} </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element[headers[4]]}} </mat-cell>
+            <mat-cell *matCellDef="let element" [ngClass]="element[headers[4]] >= 0 ? 'up' : 'down'"> {{element[headers[4]] | percent:"1.2-2"}} </mat-cell>
+            <mat-footer-cell *matFooterCellDef [ngClass]="total_percent() >= 0 ? 'up' : 'down'">{{total_percent() | percent:"1.2-2"}}</mat-footer-cell>
         </ng-container>
         
         <!-- Symbol Column -->
         <ng-container [matColumnDef]="headers[5]">
             <mat-header-cell *matHeaderCellDef> {{headers[5]}} </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element[headers[5]]}} </mat-cell>
+            <mat-cell *matCellDef="let element" [ngClass]="element[headers[5]] >= 0 ? 'up' : 'down'"> {{element[headers[5]] | currency}} </mat-cell>
+            <mat-footer-cell *matFooterCellDef [ngClass]="total_gl() >= 0 ? 'up' : 'down'">{{total_gl()  | currency}}</mat-footer-cell>
         </ng-container>
         
         <mat-header-row *matHeaderRowDef="headers"></mat-header-row>
         <mat-row *matRowDef="let row; columns: headers;"></mat-row>
+        <mat-footer-row *matFooterRowDef="headers"></mat-footer-row>
     </mat-table>
 </div>

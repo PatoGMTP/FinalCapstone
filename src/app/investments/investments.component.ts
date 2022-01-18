@@ -1,5 +1,5 @@
 import { CollectionViewer, DataSource } from '@angular/cdk/collections';
-import { Component, ElementRef, Injectable, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Injectable, OnInit, ViewChild } from '@angular/core';
 import { MatTable } from '@angular/material/table';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Investment } from '../investmentInt';
@@ -30,18 +30,33 @@ class MyData implements DataSource<Table> {
 
   subject = new BehaviorSubject<Table[]>([]);
 
+  count = 0;
+  total_current_value = 0;
+  total_previous_value = 0;
+  total_percent = 0;
+  total_gl = 0;
+
   constructor(private supabase: SupabaseService, private dummy: StockServerService) { }
 
-  connect(collectionViewer: CollectionViewer): Observable<readonly Table[]> {
-      return this.subject.asObservable();
+  connect(collectionViewer: CollectionViewer): Observable<readonly Table[]> 
+  {
+    console.log("CONNECT!");
+    return this.subject.asObservable();
   }
 
-  disconnect(collectionViewer: CollectionViewer): void {
-      this.subject.complete();
+  disconnect(collectionViewer: CollectionViewer): void 
+  {
+    // this.subject.complete();
   }
 
   update_data(): void
   {
+    this.count = 0;
+    this.total_current_value = 0;
+    this.total_previous_value = 0;
+    this.total_percent = 0;
+    this.total_gl = 0;
+
     this.table_data = [];
 
     this.investments.forEach(inv => {
@@ -51,19 +66,46 @@ class MyData implements DataSource<Table> {
       let current_value = inv.units * current_price;
       let previous_price = data[(len-1) - (1000*60*60*24/SERVER_DATA_FREQUENCY)].close;
       let previous_value = inv.units * previous_price;
-      if (previous_value == 0) previous_value = 1;
-      let percent_change = (current_value - previous_value) / previous_value;
+      let percent_change = (current_price - previous_price) / previous_price;
+      let gl = current_value - previous_value;
+
       this.table_data.push({
         "Stock": inv.symbol,
         "Shares Owned": inv.units,
         "Current Price": current_price,
         "Current Value of Shares": current_value,
         "Todays % Change": percent_change,
-        "Gains/Losses": current_value - previous_value,
+        "Gains/Losses": gl,
       });
+
+      this.total_current_value += current_value;
+      this.total_previous_value += previous_value;
+      this.total_gl += gl;
+      this.count++;
     });
 
     this.subject.next(this.table_data);
+
+    console.log("Done!", this.investments, this.table_data);
+  }
+
+  get_total_value(): number
+  {
+    return this.total_current_value;
+  }
+
+  get_total_percent(): number
+  {
+    if (this.total_previous_value == 0) return 0;
+    else
+    {
+      return (this.total_current_value - this.total_previous_value) / this.total_previous_value;
+    } 
+  }
+
+  get_total_gl(): number
+  {
+    return this.total_gl;
   }
 }
 
@@ -72,7 +114,7 @@ class MyData implements DataSource<Table> {
   templateUrl: './investments.component.html',
   styleUrls: ['./investments.component.scss']
 })
-export class InvestmentsComponent implements OnInit {
+export class InvestmentsComponent implements AfterViewInit {
 
   constructor(private supabase: SupabaseService, private dummy: StockServerService, public data: MyData) { }
 
@@ -89,14 +131,14 @@ export class InvestmentsComponent implements OnInit {
     "Gains/Losses"
   ];
 
-  ngOnInit(): void
+  ngAfterViewInit(): void
   {
     // Get updates about what symbols are being tracked
     this.supabase.investments_subject.subscribe(items => {
       this.investments = items;
       this.data.investments = this.investments;
 
-      if (items.length > 0 && this.all_data[this.investments[0].symbol].length > 0)
+      if (items.length > 0 && this.all_data[this.investments[0].symbol] && this.all_data[this.investments[0].symbol].length > 0)
       {
         this.data.update_data();
       }
@@ -107,7 +149,7 @@ export class InvestmentsComponent implements OnInit {
       this.all_data = data;
       this.data.all_data = this.all_data;
 
-      if (this.investments.length > 0 && data[this.investments[0].symbol].length > 0)
+      if (this.investments.length > 0 && data[this.investments[0].symbol] && data[this.investments[0].symbol].length > 0)
       {
         this.data.update_data();
       }
@@ -123,5 +165,20 @@ export class InvestmentsComponent implements OnInit {
     target.units = this.data.table_data.find(item => item.Stock == symbol)!['Shares Owned'];
 
     this.supabase.update_investment(target);
+  }
+
+  total_value(): number
+  {
+    return this.data.get_total_value();
+  }
+
+  total_percent(): number
+  {
+    return this.data.get_total_percent();
+  }
+
+  total_gl(): number
+  {
+    return this.data.get_total_gl();
   }
 }
