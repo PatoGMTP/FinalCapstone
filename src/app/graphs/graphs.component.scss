@@ -26,10 +26,22 @@ $warn:    map.get($color-config, 'warn');
     {
         background-color: mat.get-color-from-palette($accent, 200);
         border-radius: 10px;
-        padding: 15px;
+        padding: 15px 15px 10px;
 
         display: flex;
+        flex-flow: column;
         justify-content: center;
+        align-items: center;
+        gap: 5px;
+        // align-items: flex-start;
+
+        button
+        {
+            border: none;
+            text-decoration: none;
+            background-color: mat.get-color-from-palette($accent);
+            color: mat.get-color-from-palette($accent, default-contrast);
+        }
     }
 
     .new_graph
@@ -38,8 +50,32 @@ $warn:    map.get($color-config, 'warn');
         border-radius: 10px;
         padding: 15px;
 
-        // display: flex;
-        // justify-content: center;
+        display: grid;
+        grid-template-rows: repeat(6, auto);
+        gap: 5px;
+        justify-content: center;
+
+        & > *
+        {
+            display: flex;
+            justify-content: center;
+        }
+
+        mat-radio-group
+        {
+            display: flex;
+            flex-flow: row;
+            gap: 5px;
+            align-items: center;
+        }
+
+        button
+        {
+            border: none;
+            text-decoration: none;
+            background-color: mat.get-color-from-palette($accent);
+            color: mat.get-color-from-palette($accent, default-contrast);
+        }
     }
 }
 

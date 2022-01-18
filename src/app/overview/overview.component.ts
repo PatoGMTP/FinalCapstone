@@ -195,7 +195,8 @@ export class OverviewComponent implements OnInit {
       }
 
       let s = new Date(this.date_range_ctrl.value.start).setHours(0, 0, 0, 0);
-      let e = new Date(this.date_range_ctrl.value.end).setHours(0, 0, 0, 0);
+      let e = new Date(this.date_range_ctrl.value.end).setHours(0, 0, 0, 0) + 1000*60*60*24;
+      console.log(s, e);
       start_index = len - (((today - s) / SERVER_DATA_FREQUENCY) + minutes_so_far);
       end_index = len - (((today - e) / SERVER_DATA_FREQUENCY) + minutes_so_far - 2);
 

@@ -1,4 +1,45 @@
 
 <div class="table">
-    Investments/Table widget goes here
+    <mat-table [dataSource]="data" class="mat-elevation-z8" #table>
+        <!-- Position Column -->
+        <ng-container [matColumnDef]="headers[0]">
+            <mat-header-cell *matHeaderCellDef> {{headers[0]}} </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element[headers[0]]}} </mat-cell>
+        </ng-container>
+        
+        <!-- Name Column -->
+        <ng-container [matColumnDef]="headers[1]">
+            <mat-header-cell *matHeaderCellDef> {{headers[1]}} </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+                <input matInput [(ngModel)]="element[headers[1]]" (change)="update(element[headers[0]])" type="number">
+            </mat-cell>
+        </ng-container>
+        
+        <!-- Weight Column -->
+        <ng-container [matColumnDef]="headers[2]">
+            <mat-header-cell *matHeaderCellDef> {{headers[2]}} </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element[headers[2]]}} </mat-cell>
+        </ng-container>
+        
+        <!-- Symbol Column -->
+        <ng-container [matColumnDef]="headers[3]">
+            <mat-header-cell *matHeaderCellDef> {{headers[3]}} </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element[headers[3]]}} </mat-cell>
+        </ng-container>
+        
+        <!-- Symbol Column -->
+        <ng-container [matColumnDef]="headers[4]">
+            <mat-header-cell *matHeaderCellDef> {{headers[4]}} </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element[headers[4]]}} </mat-cell>
+        </ng-container>
+        
+        <!-- Symbol Column -->
+        <ng-container [matColumnDef]="headers[5]">
+            <mat-header-cell *matHeaderCellDef> {{headers[5]}} </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element[headers[5]]}} </mat-cell>
+        </ng-container>
+        
+        <mat-header-row *matHeaderRowDef="headers"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: headers;"></mat-row>
+    </mat-table>
 </div>

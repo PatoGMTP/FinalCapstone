@@ -94,7 +94,7 @@ export class SupabaseService {
     // If logged in, update Supabase as well
     if (this.session)
     {
-      this.updateInvestment({owner: this.user?.id!, options: investment}).then(resp => {
+      this.updateInvestment(investment).then(resp => {
         console.log(resp);
 
         if (resp.data)
@@ -174,6 +174,20 @@ export class SupabaseService {
     }
   }
 
+  update_investment(inv: Investment): void
+  {
+    this.page_state.investments_list.find(item => item.symbol == inv.symbol)!.units = inv.units;
+
+    if (this.session)
+    {
+      this.updateInvestment(inv).then(resp => console.log(resp));
+    }
+
+    this.investments_subject.next(this.page_state.investments_list);
+
+    localStorage.setItem("page_state", JSON.stringify(this.page_state));
+  }
+
   add_graph(input: Graph): void
   {
     this.page_state.custom_graphs.push(input);
@@ -197,6 +211,20 @@ export class SupabaseService {
           console.log("ERROR! (Custom Graph):", resp, input);
         }
       });
+    }
+
+    this.graph_subject.next(this.page_state.custom_graphs);
+
+    localStorage.setItem("page_state", JSON.stringify(this.page_state));
+  }
+
+  remove_graph(index: number): void
+  {
+    let old = this.page_state.custom_graphs.splice(index+1, 1)[0];
+
+    if (this.session)
+    {
+      this.removeGraph(old).then(resp => console.log(resp));
     }
 
     this.graph_subject.next(this.page_state.custom_graphs);
@@ -272,7 +300,7 @@ export class SupabaseService {
         
         this.page_state.investments_list.forEach(investment => {
 
-          this.updateInvestment({owner: this.user?.id!, options: investment}).then(resp => {
+          this.updateInvestment(investment).then(resp => {
 
             // Same as above, assign each investment/stock/symbol their id given by Supabase
             if (resp.data)
@@ -382,9 +410,15 @@ export class SupabaseService {
     return this.supabase.from('graphs').delete().eq("id", graph.id);
   }
 
-  updateInvestment(investment: Investment_Entry)
+  updateInvestment(investment: Investment)
   {
-    return this.supabase.from('investments').upsert(investment, {returning: "representation"});
+    let output: Investment_Entry = {
+      id: investment.id,
+      owner: this.user?.id,
+      options: investment,
+    }
+
+    return this.supabase.from('investments').upsert(output, {returning: "representation"});
   }
 
   removeInvestment(investment: Investment)

@@ -14,13 +14,14 @@
             [data]="cg.data"
             [layout]="cg.layout"
         ></plotly-plot>
+        <button (click)="remove(i)">Remove Graph</button>
     </div>
 </div>
 
 <div class="new_graph">
     <div class="one">
-        <mat-form-field appearance="fill">
-            <mat-label>Stock</mat-label>
+        <mat-form-field appearance="fill" class="top_form">
+            <mat-label class="top_form">Stock</mat-label>
             <mat-select
                 [formControl]="new_symbol_ctrl"
             >
@@ -40,15 +41,25 @@
             class="type_radio"
             [(ngModel)]="new_type"
         >
-            <mat-radio-button class="example-radio-button" *ngFor="let t of types" [value]="t">
-                {{t}}
+            <mat-radio-button
+                class="example-radio-button"
+                [value]="'Relative'"
+            >
+                Relative
+            </mat-radio-button>
+            
+            <mat-radio-button
+                class="example-radio-button"
+                [value]="'Fixed'"
+            >
+                Fixed
             </mat-radio-button>
         </mat-radio-group>
     </div>
     
     <div class="three">
-        <mat-form-field appearance="fill">
-            <mat-label>Relative Range</mat-label>
+        <mat-form-field appearance="fill" class="top_form">
+            <mat-label [ngClass]="new_type == 'Relative' ? 'top_form' : ''">Relative Range</mat-label>
             <mat-select
                 [formControl]="new_number_range_ctrl"
                 [disabled]="new_type == 'Fixed'"
@@ -64,8 +75,8 @@
     </div>
     
     <div class="four">
-        <mat-form-field appearance="fill">
-            <mat-label>Enter a date range</mat-label>
+        <mat-form-field appearance="fill" class="top_form" >
+            <mat-label [ngClass]="new_type == 'Fixed' ? 'top_form' : ''">Enter a date range</mat-label>
             <mat-date-range-input [formGroup]="new_date_range_ctrl" [rangePicker]="picker" 
             [disabled]="new_type == 'Relative'">
                 <input matStartDate formControlName="start" placeholder="Start date">
@@ -80,8 +91,8 @@
     </div>
     
     <div class="five">
-        <mat-form-field appearance="fill">
-            <mat-label>Interval</mat-label>
+        <mat-form-field appearance="fill" class="top_form">
+            <mat-label class="top_form">Interval</mat-label>
             <mat-select
                 [formControl]="new_interval_ctrl"
             >
@@ -96,6 +107,6 @@
     </div>
     
     <div class="six">
-        <button (click)="submit()">Submit!</button>
+        <button (click)="submit()">Create New Graph</button>
     </div>
 </div>

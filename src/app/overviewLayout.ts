@@ -79,7 +79,7 @@ export const overview_layout: Plotly_Layout =
   export const graphs_layout: Plotly_Layout =
   {
     width: 650,
-    height: 325,
+    height: 315,
     title: '',
     margin: {
       b: 45,

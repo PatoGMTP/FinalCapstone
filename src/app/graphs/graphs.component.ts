@@ -46,7 +46,7 @@ export class GraphsComponent implements OnInit {
 
   ranges: {value: Range_Number, view_value: Range_String}[] = ranges;
 
-  new_type: "Fixed" | "Relative" = "Fixed";
+  new_type: "Fixed" | "Relative" = "Relative";
 
   types: string[] = ["Fixed", "Relative"];
   
@@ -120,6 +120,8 @@ export class GraphsComponent implements OnInit {
     let len = this.all_data[this.tracked_symbols[0]].length;
 
     this.graphs.forEach((grph, i) => {
+      grph.start = new Date(grph.start);
+      grph.end = new Date(grph.end);
       console.log(grph);
       if (grph.range_type == "Relative")
       {
@@ -141,11 +143,15 @@ export class GraphsComponent implements OnInit {
             minutes_so_far = len - i;
           }
         }
+
+        console.log(grph.start, grph.end)
   
         let s = new Date(grph.start).setHours(0, 0, 0, 0);
-        let e = new Date(grph.end).setHours(0, 0, 0, 0);
+        let e = new Date(grph.end).setHours(0, 0, 0, 0) + 1000*60*60*24;
         start_index = len - (((today - s) / SERVER_DATA_FREQUENCY) + minutes_so_far);
         end_index = len - (((today - e) / SERVER_DATA_FREQUENCY) + minutes_so_far - 2);
+
+        console.log(start_index, end_index, len);
   
         if (start_index > len || start_index < 0)
         {
@@ -160,7 +166,16 @@ export class GraphsComponent implements OnInit {
   
       console.log(start_index, end_index, len);
 
-      this.candle_graphs[i].layout.title = grph.symbol;
+      this.candle_graphs[i].layout.title = `${grph.symbol}: Intervals of ${grph.interval}`;
+
+      if (grph.range_type == "Relative")
+      {
+        this.candle_graphs[i].layout.title += `<br>${range_n_to_s[grph.range_number]}`;
+      }
+      else
+      {
+        this.candle_graphs[i].layout.title += `<br>${grph.start.toLocaleDateString()} to ${grph.end.toLocaleDateString()}`;
+      }
       cur_data = this.all_data[grph.symbol].slice(start_index, end_index);
 
       let open: number[] = [];
@@ -169,12 +184,12 @@ export class GraphsComponent implements OnInit {
       let low: number[] = [];
       let times: Date[] = [];
 
-      len = cur_data.length;
+      let len2 = cur_data.length;
       let iter = this.interval_s_to_n[grph.interval] / SERVER_DATA_FREQUENCY;
 
       console.log(cur_data, iter);
 
-      for (let i = iter; i < len; i += iter)
+      for (let i = iter; i < len2; i += iter)
       {
         open.push(cur_data[i-iter].open);
         close.push(cur_data[i].open);
@@ -211,5 +226,10 @@ export class GraphsComponent implements OnInit {
     this.new_number_range_ctrl.setValue(this.milliseconds_per_day);
     this.new_date_range_ctrl.setValue({start: new Date(Date.now() - 1000*60*60*24), end: new Date()});
     this.new_interval_ctrl.setValue(intervals[0].view_value);
+  }
+
+  remove(index: number): void
+  {
+    this.supabase.remove_graph(index);
   }
 }
